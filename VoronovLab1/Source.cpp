@@ -34,6 +34,19 @@ void Menu(Pipe t) {
 			cin >> t.diametr;
 			cout << "Pipe condition: ";
 			break;
+		case 2:
+			cout << "Insert CS name: ";
+			cin >> t.name;
+			cout << "Insert the number of workshops: ";
+			cin >> t.lenght;
+			cout << "Insert the number of workshops in operation: ";
+			cin >> t.lenght;
+			cout << "Insert CS class: ";
+			break;
+		case 3:
+			cout << "Pipe name: " << t.name;
+			break;
+
 		}
 	}
 }
