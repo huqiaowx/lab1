@@ -1,5 +1,7 @@
 #include <iostream>
 #include <string>
+#include <fstream>
+#include <limits>
 
 using namespace std;
 
@@ -75,6 +77,7 @@ void Menu(Pipe& t,CS& k) {
 			inputNumber(t.diametr, "Insert pipe diametr: ", true);
 			inputBool(t.repair, "Pipe condition(0 or 1): ");
 			break;
+
 		case 2:
 			cout << "Insert CS name: ";
 			cin.ignore();
@@ -100,6 +103,7 @@ void Menu(Pipe& t,CS& k) {
 			}
 			inputNumber(k.class_cs, "Insert CS class: ", true);
 			break;
+
         case 3:
             if (t.name.empty() && k.name.empty()) {
                 cout << "No data available, please add objects first." << endl;
@@ -122,6 +126,7 @@ void Menu(Pipe& t,CS& k) {
                 }
             }
             break;
+
         case 4:
             if (t.name.empty()) {
                 cout << "No pipe to edit, please add a pipe first." << endl;
@@ -262,7 +267,116 @@ void Menu(Pipe& t,CS& k) {
             }
             break;
 
-		
+        case 6:
+        {
+            string filename;
+            cout << "Enter filename to save: ";
+            cin.ignore();
+            getline(cin, filename);
+
+            ofstream file(filename);
+            if (!file) {
+                cout << "Error opening file for writing!" << endl;
+                break;
+            }
+
+            if (!t.name.empty()) {
+                file << "PIPE" << endl;
+                file << t.name << endl;
+                file << t.lenght << endl;
+                file << t.diametr << endl;
+                file << t.repair << endl;
+            }
+
+            if (!k.name.empty()) { 
+                file << "CS" << endl;
+                file << k.name << endl;
+                file << k.workshop << endl;
+                file << k.w_work << endl;
+                file << k.class_cs << endl;
+            }
+
+            file.close();
+
+            if (t.name.empty() && k.name.empty()) {
+                cout << "No data to save!" << endl;
+            }
+            else {
+                cout << "Data saved successfully to " << filename << endl;
+                if (!t.name.empty()) cout << "- Pipe data saved" << endl;
+                if (!k.name.empty()) cout << "- Compressor station data saved" << endl;
+            }
+            break;
+        }
+
+        case 7:
+        {
+            string filename;
+            cout << "Enter filename to load: ";
+            cin.ignore();
+            getline(cin, filename);
+
+            ifstream file(filename);
+            if (!file) {
+                cout << "Error opening file for reading!" << endl;
+                break;
+            }
+
+            Pipe tempPipe;
+            CS tempCS;
+            bool pipeLoaded = false;
+            bool csLoaded = false;
+
+            string line;
+            while (getline(file, line)) {
+                if (line == "PIPE") {
+                    getline(file, tempPipe.name);
+                    file >> tempPipe.lenght >> tempPipe.diametr >> tempPipe.repair;
+                    file.ignore();
+
+                    if (!tempPipe.name.empty()) {
+                        pipeLoaded = true;
+                    }
+                }
+                else if (line == "CS") {
+                    getline(file, tempCS.name);
+                    file >> tempCS.workshop >> tempCS.w_work >> tempCS.class_cs;
+                    file.ignore();
+
+                    if (!tempCS.name.empty()) {
+                        csLoaded = true;
+                    }
+                }
+            }
+
+            file.close();
+
+            if (pipeLoaded) {
+                t = tempPipe;
+                cout << "Pipe data loaded successfully!" << endl;
+                cout << "Name: " << t.name << ", Length: " << t.lenght << ", Diameter: " << t.diametr << endl;
+            }
+            else {
+                cout << "No valid pipe data found in file." << endl;
+            }
+
+            if (csLoaded) {
+                k = tempCS;
+                cout << "Compressor station data loaded successfully!" << endl;
+                cout << "Name: " << k.name << ", Workshops: " << k.workshop << "/" << k.w_work << endl;
+            }
+            else {
+                cout << "No valid compressor station data found in file." << endl;
+            }
+
+            if (!pipeLoaded && !csLoaded) {
+                cout << "File is empty or contains invalid data!" << endl;
+            }
+            break;
+        }
+
+        case 0:
+            return;
 
 		default:
 			cout << "Invalid option!" << endl;
