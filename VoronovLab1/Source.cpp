@@ -61,8 +61,27 @@ void Menu(Pipe& t,CS& k) {
 	while (1)
 	{
 		cout << "Choose an action\n1. Add pipe\n2. Add compressor station\n3. View all objects\n4. Edit pipe\n5. Edit compressor station\n6. Save\n7. Load\n0. Exit\n";
-		int option;
-		cin >> option;
+        string input;
+        getline(cin, input); 
+
+        if (input.empty()) {
+            continue;
+        }
+
+        bool isNumber = true;
+        for (char c : input) {
+            if (!isdigit(c)) {
+                isNumber = false;
+                break;
+            }
+        }
+
+        if (!isNumber) {
+            cout << "Error, please enter only numbers (0-7)." << endl;
+            continue;
+        }
+
+        int option = stoi(input);
 		switch (option)
 		{
 		case 1:
@@ -76,6 +95,7 @@ void Menu(Pipe& t,CS& k) {
 			inputNumber(t.lenght, "Insert pipe lenght: ", true);
 			inputNumber(t.diametr, "Insert pipe diametr: ", true);
 			inputBool(t.repair, "Pipe condition(0 or 1): ");
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
 			break;
 
 		case 2:
@@ -102,6 +122,7 @@ void Menu(Pipe& t,CS& k) {
 				}
 			}
 			inputNumber(k.class_cs, "Insert CS class: ", true);
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
 			break;
 
         case 3:
@@ -170,6 +191,7 @@ void Menu(Pipe& t,CS& k) {
                     break;
                 case 5:
                     cout << "Returning to main menu..." << endl << endl;
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
                     break;
                 default:
                     cout << "Invalid option!" << endl;
@@ -258,6 +280,7 @@ void Menu(Pipe& t,CS& k) {
                     break;
                 case 7:
                     cout << "Returning to main menu..." << endl << endl;
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
                     break;
                 default:
                     cout << "Invalid option!" << endl;
