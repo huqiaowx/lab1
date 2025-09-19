@@ -76,7 +76,20 @@ void Menu(Pipe& t,CS& k) {
 			cin.ignore();
 			getline(cin, k.name);
 			inputNumber(k.workshop, "Insert the number of workshops: ", true);
-			inputNumber(k.w_work, "Insert the number of workshops in operation: ", true);
+			while (true) {
+				inputNumber(k.w_work, "Insert the number of workshops in operation: ");
+				if (k.w_work < 0) {
+					cout << "Error, number cannot be negative. Try again." << endl;
+					continue;
+				}
+				if (k.w_work >= 0 && k.w_work <= k.workshop) {
+					break;
+				}
+				if (k.w_work > k.workshop) {
+					cout << "Error. There can be no more operating stations than there are total stations.("
+						<< k.workshop << "). Try again." << endl;
+				}
+			}
 			inputNumber(k.class_cs, "Insert CS class: ", true);
 			break;
 		case 3:
