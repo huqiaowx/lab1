@@ -22,6 +22,25 @@ bool inputNumber(T& variable, const string& prompt, bool positiveOnly = false) {
 		}
 	}
 }
+
+bool inputBool(bool& variable, const string& prompt) {
+	int temp;
+	while (true) {
+		cout << prompt;
+		if (cin >> temp && (temp == 0 || temp == 1)) {
+			variable = (temp == 1);
+			return false;
+		}
+		else {
+			cout << "Invalid input, please enter 0 or 1." << endl;
+			cin.clear();
+			cin.ignore(numeric_limits<streamsize>::max(), '\n');
+			continue;
+		}
+	}
+}
+
+
 struct Pipe {
 	string name;
 	float lenght;
@@ -50,8 +69,7 @@ void Menu(Pipe& t,CS& k) {
 			getline(cin, t.name);
 			inputNumber(t.lenght, "Insert pipe lenght: ", true);
 			inputNumber(t.diametr, "Insert pipe diametr: ", true);
-			cout << "Pipe condition(0 or 1): ";
-			cin >> t.repair;
+			inputBool(t.repair, "Pipe condition(0 or 1): ");
 			break;
 		case 2:
 			cout << "Insert CS name: ";
