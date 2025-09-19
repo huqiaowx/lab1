@@ -186,7 +186,9 @@ void Menu(Pipe& t,CS& k) {
                 cout << "2. Change total workshops" << endl;
                 cout << "3. Change working workshops" << endl;
                 cout << "4. Change class" << endl;
-                cout << "5. Back to main menu" << endl;
+                cout << "5. Start workshop" << endl;
+                cout << "6. Stop workshop" << endl;
+                cout << "7. Back to main menu" << endl;
                 cout << "Choose parameter to edit: ";
 
                 int csChoice;
@@ -232,13 +234,31 @@ void Menu(Pipe& t,CS& k) {
                     cout << "Class updated!" << endl;
                     break;
                 case 5:
+                    if (k.w_work < k.workshop) {
+                        k.w_work++;
+                        cout << "Workshop started, now working: " << k.w_work << " of " << k.workshop << endl;
+                    }
+                    else {
+                        cout << "All workshops are already working!" << endl;
+                    }
+                    break;
+                case 6:
+                    if (k.w_work > 0) {
+                        k.w_work--;
+                        cout << "Workshop stopped, now working: " << k.w_work << " of " << k.workshop << endl;
+                    }
+                    else {
+                        cout << "No workshops are working!" << endl;
+                    }
+                    break;
+                case 7:
                     cout << "Returning to main menu..." << endl << endl;
                     break;
                 default:
                     cout << "Invalid option!" << endl;
                     continue;
                 }
-                if (csChoice == 5) break;
+                if (csChoice == 7) break;
             }
             break;
 
