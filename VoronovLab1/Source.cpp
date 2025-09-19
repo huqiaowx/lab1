@@ -3,6 +3,25 @@
 
 using namespace std;
 
+template<typename T>
+bool inputNumber(T& variable, const string& prompt, bool positiveOnly = false) {
+	while (true) {
+		cout << prompt;
+		if (cin >> variable) {
+			if (positiveOnly && variable <= 0) {
+				cout << "Error, value must be positive" << endl;
+				cin.ignore(numeric_limits<streamsize>::max(), '\n');
+				continue;
+			}
+			return true;
+		}
+		else {
+			cout << "Invalid input, please enter a valid number." << endl;
+			cin.clear();
+			cin.ignore(numeric_limits<streamsize>::max(), '\n');
+		}
+	}
+}
 struct Pipe {
 	string name;
 	float lenght;
@@ -14,10 +33,10 @@ struct CS {
 	string name;
 	int workshop;
 	int w_work;
-	string class_cs;
+	float class_cs;
 };
 
-void Menu(Pipe t,CS k) {
+void Menu(Pipe& t,CS& k) {
 	while (1)
 	{
 		cout << "Choose an action\n1. Add pipe\n2. Add compressor station\n3. View all objects\n4. Edit pipe\n5. Edit compressor station\n6. Save\n7. Load\n0. Exit\n";
@@ -27,23 +46,20 @@ void Menu(Pipe t,CS k) {
 		{
 		case 1:
 			cout << "Insert pipe name: ";
-			cin >> t.name;
-			cout << "Insert pipe lenght: ";
-			cin >> t.lenght;
-			cout << "Insert pipe diametr: ";
-			cin >> t.diametr;
-			cout << "Pipe condition: ";
+			cin.ignore();
+			getline(cin, t.name);
+			inputNumber(t.lenght, "Insert pipe lenght: ", true);
+			inputNumber(t.diametr, "Insert pipe diametr: ", true);
+			cout << "Pipe condition(0 or 1): ";
 			cin >> t.repair;
 			break;
 		case 2:
 			cout << "Insert CS name: ";
-			cin >> k.name;
-			cout << "Insert the number of workshops: ";
-			cin >> k.workshop;
-			cout << "Insert the number of workshops in operation: ";
-			cin >> k.w_work;
-			cout << "Insert CS class: ";
-			cin >> k.class_cs;
+			cin.ignore();
+			getline(cin, k.name);
+			inputNumber(k.workshop, "Insert the number of workshops: ", true);
+			inputNumber(k.w_work, "Insert the number of workshops in operation: ", true);
+			inputNumber(k.class_cs, "Insert CS class: ", true);
 			break;
 		case 3:
 			cout << "Pipe name: " << t.name << endl;
@@ -53,9 +69,12 @@ void Menu(Pipe t,CS k) {
 			cout << "CS name: " << k.name << endl;
 			cout << "Number of workshops: " << k.workshop << endl;
 			cout << "Number of workshops in operation: " << k.w_work << endl;
-			cout << "CS class: " << k.class_cs << endl;
+			cout << "CS class: " << k.class_cs << endl << endl;
 			break;
+		
 
+		default:
+			cout << "...";
 
 		}
 	}
