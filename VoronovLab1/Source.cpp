@@ -10,11 +10,18 @@ bool inputNumber(T& variable, const string& prompt, bool positiveOnly = false) {
 	while (true) {
 		cout << prompt;
 		if (cin >> variable) {
+            if (cin.peek() != '\n') {
+                cout << "Error, please enter only numbers without extra characters." << endl;
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                continue;
+            }
 			if (positiveOnly && variable <= 0) {
 				cout << "Error, value must be positive" << endl;
 				cin.ignore(numeric_limits<streamsize>::max(), '\n');
 				continue;
 			}
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
 			return true;
 		}
 		else {
@@ -31,6 +38,12 @@ bool inputBool(bool& variable, const string& prompt) {
 		cout << prompt;
 		if (cin >> temp && (temp == 0 || temp == 1)) {
 			variable = (temp == 1);
+            if (cin.peek() != '\n') {
+                cout << "Error, please enter only 0 or 1 without extra characters." << endl;
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                continue;
+            }
 			return false;
 		}
 		else {
