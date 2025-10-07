@@ -2,6 +2,7 @@
 #include <string>
 #include <fstream>
 #include <limits>
+#include "Pipe.h"
 
 using namespace std;
 
@@ -56,12 +57,6 @@ bool inputBool(bool& variable, const string& prompt) {
 }
 
 
-struct Pipe {
-	string name;
-	float lenght;
-	int diametr;
-	bool repair;
-};
 
 struct CS {
 	string name;
@@ -97,23 +92,33 @@ void Menu(Pipe& t,CS& k) {
         int option = stoi(input);
 		switch (option)
 		{
-		case 1:
-			cout << "Insert pipe name: ";
-            cin.ignore();
-            getline(cin, t.name);
-            while (t.name.empty()) {
+        case 1: {
+            cout << "Insert pipe name: ";
+            string tempName;
+            getline(cin, tempName);
+            while (tempName.empty()) {
                 cout << "Error, insert pipe name: ";
-                getline(cin, t.name);
+                getline(cin, tempName);
             }
-			inputNumber(t.lenght, "Insert pipe lenght: ", true);
-			inputNumber(t.diametr, "Insert pipe diametr: ", true);
-			inputBool(t.repair, "Pipe condition(0 or 1): ");
+            t.setName(tempName);
+
+            float tempLenght;
+            inputNumber(tempLenght, "Insert pipe lenght: ", true);
+            t.setLength(tempLenght);
+
+            int tempDiametr;
+            inputNumber(tempDiametr, "Insert pipe diametr: ", true);
+            t.setDiametr(tempDiametr);
+
+            bool tempRepair;
+            inputBool(tempRepair, "Pipe condition(0 or 1): ");
+            t.setRepair(tempRepair);
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
-			break;
+            break;
+        }
 
 		case 2:
 			cout << "Insert CS name: ";
-			cin.ignore();
 			getline(cin, k.name);
             while (k.name.empty()) {
                 cout << "Error, insert cs name: ";
@@ -138,17 +143,17 @@ void Menu(Pipe& t,CS& k) {
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
 			break;
 
-        case 3:
-            if (t.name.empty() && k.name.empty()) {
+        case 3: {
+            if (t.isEmpty() && k.name.empty()) {
                 cout << "No data available, please add objects first." << endl;
             }
             else {
-                if (!t.name.empty()) {
+                if (!t.isEmpty()) {
                     cout << "\nPIPE" << endl;
-                    cout << "Pipe name: " << t.name << endl;
-                    cout << "Pipe lenght: " << t.lenght << endl;
-                    cout << "Pipe diametr: " << t.diametr << endl;
-                    cout << "Pipe condition: " << (t.repair ? "1" : "0") << endl << endl;
+                    cout << "Pipe name: " << t.getName() << endl;
+                    cout << "Pipe lenght: " << t.getLenght() << endl;
+                    cout << "Pipe diametr: " << t.getDiametr() << endl;
+                    cout << "Pipe condition: " << (t.getRepair() ? "1" : "0") << endl << endl;
                 }
                 if (!k.name.empty()) {
                     cout << "\nCOMPRESSOR STATION" << endl;
@@ -160,9 +165,10 @@ void Menu(Pipe& t,CS& k) {
                 }
             }
             break;
+        }
 
-        case 4:
-            if (t.name.empty()) {
+        case 4: {
+            if (t.isEmpty()) {
                 cout << "No pipe to edit, please add a pipe first." << endl;
                 break;
             }
@@ -180,41 +186,54 @@ void Menu(Pipe& t,CS& k) {
                 cin >> pipeChoice;
 
                 switch (pipeChoice) {
-                case 1:
-                    cout << "Current name: " << t.name << endl;
+                case 1: {
+                    cout << "Current name: " << t.getName() << endl;
                     cout << "Enter new name: ";
                     cin.ignore();
-                    getline(cin, t.name);
+                    string tempName;
+                    getline(cin, tempName);
+                    t.setName(tempName);
                     cout << "Name updated!" << endl;
-                    break;
-                case 2:
-                    cout << "Current length: " << t.lenght << endl;
-                    inputNumber(t.lenght, "Enter new length: ", true);
+                }
+                case 2: {
+                    cout << "Current length: " << t.getLenght() << endl;
+                    float tempLenght;
+                    inputNumber(tempLenght, "Enter new length: ", true);
+                    t.setLength(tempLenght);
                     cout << "Length updated!" << endl;
                     break;
-                case 3:
-                    cout << "Current diameter: " << t.diametr << endl;
-                    inputNumber(t.diametr, "Enter new diameter: ", true);
+                }
+                case 3: {
+                    cout << "Current diameter: " << t.getDiametr() << endl;
+                    int tempDiametr;
+                    inputNumber(tempDiametr, "Enter new diameter: ", true);
+                    t.setDiametr(tempDiametr);
                     cout << "Diameter updated!" << endl;
                     break;
-                case 4:
-                    cout << "Current repair status: " << (t.repair ? "1" : "0") << endl;
-                    inputBool(t.repair, "Enter new status (0 or 1): ");
+                }
+                case 4: {
+                    cout << "Current repair status: " << (t.getRepair() ? "1" : "0") << endl;
+                    bool tempRepair;
+                    inputBool(tempRepair, "Enter new status (0 or 1): ");
+                    t.setRepair(tempRepair);
                     cout << "Repair status updated!" << endl;
                     break;
-                case 5:
+                }
+                case 5: {
                     cout << "Returning to main menu..." << endl << endl;
                     cin.ignore(numeric_limits<streamsize>::max(), '\n');
                     break;
+                }
                 default:
                     cout << "Invalid option!" << endl;
                     continue;
                 }
-                if (pipeChoice== 5) break;
+                if (pipeChoice == 5) break;
             }
             break;
+        }
 
-        case 5:
+        case 5: {
             if (k.name.empty()) {
                 cout << "No compressor station to edit, please add a compressor station first." << endl;
                 break;
@@ -302,6 +321,7 @@ void Menu(Pipe& t,CS& k) {
                 if (csChoice == 7) break;
             }
             break;
+        }
 
         case 6:
         {
@@ -316,12 +336,12 @@ void Menu(Pipe& t,CS& k) {
                 break;
             }
 
-            if (!t.name.empty()) {
+            if (!t.isEmpty()) {
                 file << "PIPE" << endl;
-                file << t.name << endl;
-                file << t.lenght << endl;
-                file << t.diametr << endl;
-                file << t.repair << endl;
+                file << t.getName() << endl;
+                file << t.getLenght() << endl;
+                file << t.getDiametr() << endl;
+                file << t.getRepair() << endl;
             }
 
             if (!k.name.empty()) { 
@@ -334,12 +354,12 @@ void Menu(Pipe& t,CS& k) {
 
             file.close();
 
-            if (t.name.empty() && k.name.empty()) {
+            if (t.isEmpty() && k.name.empty()) {
                 cout << "No data to save!" << endl;
             }
             else {
                 cout << "Data saved successfully to " << filename << endl;
-                if (!t.name.empty()) cout << "- Pipe data saved" << endl;
+                if (!t.isEmpty()) cout << "- Pipe data saved" << endl;
                 if (!k.name.empty()) cout << "- Compressor station data saved" << endl;
             }
             break;
@@ -366,11 +386,20 @@ void Menu(Pipe& t,CS& k) {
             string line;
             while (getline(file, line)) {
                 if (line == "PIPE") {
-                    getline(file, tempPipe.name);
-                    file >> tempPipe.lenght >> tempPipe.diametr >> tempPipe.repair;
+                    string name;
+                    float lenght;
+                    int diametr;
+                    bool repair;
+
+                    getline(file, name);
+                    file >> lenght >> diametr >> repair;
                     file.ignore();
 
-                    if (!tempPipe.name.empty()) {
+                    if (!name.empty()) {
+                        tempPipe.setName(name);
+                        tempPipe.setLength(lenght);
+                        tempPipe.setDiametr(diametr);
+                        tempPipe.setRepair(repair);
                         pipeLoaded = true;
                     }
                 }
@@ -390,7 +419,7 @@ void Menu(Pipe& t,CS& k) {
             if (pipeLoaded) {
                 t = tempPipe;
                 cout << "Pipe data loaded successfully!" << endl;
-                cout << "Name: " << t.name << ", Length: " << t.lenght << ", Diameter: " << t.diametr << endl;
+                cout << "Name: " << t.getName() << ", Length: " << t.getLenght() << ", Diameter: " << t.getDiametr() << endl;
             }
             else {
                 cout << "No valid pipe data found in file." << endl;
