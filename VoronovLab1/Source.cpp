@@ -3,6 +3,7 @@
 #include <fstream>
 #include <limits>
 #include "Pipe.h"
+#include "CS.h"
 
 using namespace std;
 
@@ -56,15 +57,6 @@ bool inputBool(bool& variable, const string& prompt) {
 	}
 }
 
-
-
-struct CS {
-	string name;
-	int workshop;
-	int w_work;
-	float class_cs;
-};
-
 void Menu(Pipe& t,CS& k) {
 	while (1)
 	{
@@ -117,51 +109,51 @@ void Menu(Pipe& t,CS& k) {
             break;
         }
 
-		case 2:
-			cout << "Insert CS name: ";
-			getline(cin, k.name);
-            while (k.name.empty()) {
+        case 2: {
+            cout << "Insert CS name: ";
+            string tempName;
+            getline(cin, tempName);
+            while (tempName.empty()) {
                 cout << "Error, insert cs name: ";
-                getline(cin, k.name);
+                getline(cin, tempName);
             }
-			inputNumber(k.workshop, "Insert the number of workshops: ", true);
-			while (true) {
-				inputNumber(k.w_work, "Insert the number of workshops in operation: ");
-				if (k.w_work < 0) {
-					cout << "Error, number cannot be negative. Try again." << endl;
-					continue;
-				}
-				if (k.w_work >= 0 && k.w_work <= k.workshop) {
-					break;
-				}
-				if (k.w_work > k.workshop) {
-					cout << "Error. There can be no more operating stations than there are total stations.("
-						<< k.workshop << "). Try again." << endl;
-				}
-			}
-			inputNumber(k.class_cs, "Insert CS class: ", true);
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-			break;
+            k.setName(tempName);
 
+            int tempWorkshop;
+            inputNumber(tempWorkshop, "Insert the number of workshops: ", true);
+            k.setWorkshop(tempWorkshop);
+
+            int tempW_work;
+            while (true) {
+                inputNumber(tempW_work, "Insert the number of workshops in operation: ");
+                if (tempW_work < 0) {
+                    cout << "Error, number cannot be negative. Try again." << endl;
+                    continue;
+                }
+                if (tempW_work <= k.getWorkshop()) {
+                    break;
+                }
+                cout << "Error. There can be no more operating stations than there are total stations.("
+                    << k.getWorkshop() << "). Try again." << endl;
+            }
+            k.setW_work(tempW_work);
+
+            double tempClass;
+            inputNumber(tempClass, "Insert CS class: ", true);
+            k.setClass_cs(tempClass);
+            break;
+        }
+                
         case 3: {
-            if (t.isEmpty() && k.name.empty()) {
+            if (t.isEmpty() && k.isEmpty()) { 
                 cout << "No data available, please add objects first." << endl;
             }
             else {
                 if (!t.isEmpty()) {
-                    cout << "\nPIPE" << endl;
-                    cout << "Pipe name: " << t.getName() << endl;
-                    cout << "Pipe lenght: " << t.getLenght() << endl;
-                    cout << "Pipe diametr: " << t.getDiametr() << endl;
-                    cout << "Pipe condition: " << (t.getRepair() ? "1" : "0") << endl << endl;
+                    t.displayInfo(); 
                 }
-                if (!k.name.empty()) {
-                    cout << "\nCOMPRESSOR STATION" << endl;
-                    cout << "CS name: " << k.name << endl;
-                    cout << "Number of workshops: " << k.workshop << endl;
-                    cout << "Number of workshops in operation: " << k.w_work << endl;
-                    cout << "Number of idle workshops: " << (k.workshop - k.w_work) << endl;
-                    cout << "CS class: " << k.class_cs << endl << endl;
+                if (!k.isEmpty()) {
+                    k.displayInfo(); 
                 }
             }
             break;
@@ -234,13 +226,13 @@ void Menu(Pipe& t,CS& k) {
         }
 
         case 5: {
-            if (k.name.empty()) {
+            if (k.isEmpty()) { 
                 cout << "No compressor station to edit, please add a compressor station first." << endl;
                 break;
             }
 
             while (true) {
-                cout << "\nEDIT COMPRESSOR STATION" << endl;
+                cout << "\nEDIT COMPRESSOR STATION ID: " << k.getId() << endl; 
                 cout << "1. Change name" << endl;
                 cout << "2. Change total workshops" << endl;
                 cout << "3. Change working workshops" << endl;
@@ -254,57 +246,63 @@ void Menu(Pipe& t,CS& k) {
                 cin >> csChoice;
 
                 switch (csChoice) {
-                case 1:
-                    cout << "Current name: " << k.name << endl;
+                case 1: {
+                    cout << "Current name: " << k.getName() << endl;
                     cout << "Enter new name: ";
                     cin.ignore();
-                    getline(cin, k.name);
+                    string newName;
+                    getline(cin, newName);
+                    k.setName(newName);
                     cout << "Name updated!" << endl;
                     break;
-                case 2:
-                    cout << "Current total workshops: " << k.workshop << endl;
-                    inputNumber(k.workshop, "Enter new total workshops: ", true);
-                    if (k.w_work > k.workshop) {
-                        k.w_work = k.workshop;
-                        cout << "Working workshops adjusted to " << k.w_work << endl;
-                    }
+                }
+                case 2: {
+                    cout << "Current total workshops: " << k.getWorkshop() << endl;
+                    int newTotal;
+                    inputNumber(newTotal, "Enter new total workshops: ", true);
+                    k.setWorkshop(newTotal);
                     cout << "Total workshops updated!" << endl;
                     break;
-                case 3:
-                    cout << "Current working workshops: " << k.w_work << endl;
-                    cout << "Total workshops: " << k.workshop << endl;
+                }
+                case 3: {
+                    cout << "Current working workshops: " << k.getW_work() << endl;
+                    cout << "Total workshops: " << k.getWorkshop() << endl;
+                    int newWorking;
                     while (true) {
-                        inputNumber(k.w_work, "Enter new working workshops: ");
-                        if (k.w_work < 0) {
+                        inputNumber(newWorking, "Enter new working workshops: ");
+                        if (newWorking < 0) {
                             cout << "Error, cannot be negative. Try again." << endl;
                             continue;
                         }
-                        if (k.w_work > k.workshop) {
-                            cout << "Error, cannot exceed total workshops (" << k.workshop << "). Try again." << endl;
+                        if (newWorking > k.getWorkshop()) {
+                            cout << "Error, cannot exceed total workshops (" << k.getWorkshop() << "). Try again." << endl;
                             continue;
                         }
                         break;
                     }
+                    k.setW_work(newWorking);
                     cout << "Working workshops updated!" << endl;
                     break;
-                case 4:
-                    cout << "Current class: " << k.class_cs << endl;
-                    inputNumber(k.class_cs, "Enter new class: ", true);
+                }
+                case 4: {
+                    cout << "Current class: " << k.getClass_cs() << endl;
+                    double newClass;
+                    inputNumber(newClass, "Enter new class: ", true);
+                    k.setClass_cs(newClass);
                     cout << "Class updated!" << endl;
                     break;
+                }
                 case 5:
-                    if (k.w_work < k.workshop) {
-                        k.w_work++;
-                        cout << "Workshop started, now working: " << k.w_work << " of " << k.workshop << endl;
+                    if (k.startWorkshop()) { 
+                        cout << "Workshop started, now working: " << k.getW_work() << " of " << k.getWorkshop() << endl;
                     }
                     else {
                         cout << "All workshops are already working!" << endl;
                     }
                     break;
                 case 6:
-                    if (k.w_work > 0) {
-                        k.w_work--;
-                        cout << "Workshop stopped, now working: " << k.w_work << " of " << k.workshop << endl;
+                    if (k.stopWorkshop()) { 
+                        cout << "Workshop stopped, now working: " << k.getW_work() << " of " << k.getWorkshop() << endl;
                     }
                     else {
                         cout << "No workshops are working!" << endl;
@@ -344,23 +342,23 @@ void Menu(Pipe& t,CS& k) {
                 file << t.getRepair() << endl;
             }
 
-            if (!k.name.empty()) { 
+            if (!k.isEmpty()) { 
                 file << "CS" << endl;
-                file << k.name << endl;
-                file << k.workshop << endl;
-                file << k.w_work << endl;
-                file << k.class_cs << endl;
+                file << k.getName() << endl;
+                file << k.getWorkshop() << endl;
+                file << k.getW_work() << endl;
+                file << k.getClass_cs() << endl;
             }
 
             file.close();
 
-            if (t.isEmpty() && k.name.empty()) {
+            if (t.isEmpty() && k.isEmpty()) {
                 cout << "No data to save!" << endl;
             }
             else {
                 cout << "Data saved successfully to " << filename << endl;
                 if (!t.isEmpty()) cout << "- Pipe data saved" << endl;
-                if (!k.name.empty()) cout << "- Compressor station data saved" << endl;
+                if (!k.isEmpty()) cout << "- Compressor station data saved" << endl;
             }
             break;
         }
@@ -404,11 +402,19 @@ void Menu(Pipe& t,CS& k) {
                     }
                 }
                 else if (line == "CS") {
-                    getline(file, tempCS.name);
-                    file >> tempCS.workshop >> tempCS.w_work >> tempCS.class_cs;
+                    string name;
+                    int workshop, w_work;
+                    double class_cs;
+
+                    getline(file, name);
+                    file >> workshop >> w_work >> class_cs;
                     file.ignore();
 
-                    if (!tempCS.name.empty()) {
+                    if (!name.empty()) {
+                        tempCS.setName(name);
+                        tempCS.setWorkshop(workshop);
+                        tempCS.setW_work(w_work);
+                        tempCS.setClass_cs(class_cs);
                         csLoaded = true;
                     }
                 }
@@ -428,7 +434,7 @@ void Menu(Pipe& t,CS& k) {
             if (csLoaded) {
                 k = tempCS;
                 cout << "Compressor station data loaded successfully!" << endl;
-                cout << "Name: " << k.name << ", Workshops: " << k.workshop << "/" << k.w_work << endl;
+                cout << "Name: " << k.getName() << ", Workshops: " << k.getWorkshop() << "/" << k.getW_work() << endl;
             }
             else {
                 cout << "No valid compressor station data found in file." << endl;

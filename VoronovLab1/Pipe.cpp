@@ -10,10 +10,10 @@ Pipe::Pipe(const std::string& name, double length, int diameter, bool inRepair)
 }
 
 void Pipe::displayInfo() const {
-    std::cout << "=== Pipe ID: " << id << " ===" << std::endl;
+    std::cout << " Pipe ID: " << id << std::endl;
     std::cout << "Name: " << name << std::endl;
-    std::cout << "Length: " << length << " km" << std::endl;
-    std::cout << "Diameter: " << diameter << " mm" << std::endl;
-    std::cout << "Status: " << (inRepair ? "UNDER REPAIR" : "OPERATIONAL") << std::endl;
+    std::cout << "Length: " << length << std::endl;
+    std::cout << "Diameter: " << diameter << std::endl;
+    std::cout << "Status: " << (inRepair ? "OPERATIONAL" : "UNDER REPAIR") << std::endl;
     std::cout << std::endl;
 }
