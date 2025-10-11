@@ -35,5 +35,10 @@ public:
     bool isEmpty() const { return name.empty(); }
     void displayInfo() const;
 
+    friend std::ostream& operator<<(std::ostream& out, const CS& cs);
+    friend std::istream& operator>>(std::istream& in, CS& cs);
+    friend std::ofstream& operator<<(std::ofstream& out, const CS& cs);
+    friend std::ifstream& operator>>(std::ifstream& in, CS& cs);
+
     static void resetIdCounter() { nextId = 1; }
 };

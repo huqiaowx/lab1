@@ -4,58 +4,9 @@
 #include <limits>
 #include "Pipe.h"
 #include "CS.h"
+#include "utils.h"
 
 using namespace std;
-
-template<typename T>
-bool inputNumber(T& variable, const string& prompt, bool positiveOnly = false) {
-	while (true) {
-		cout << prompt;
-		if (cin >> variable) {
-            if (cin.peek() != '\n') {
-                cout << "Error, please enter only numbers without extra characters." << endl;
-                cin.clear();
-                cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                continue;
-            }
-			if (positiveOnly && variable <= 0) {
-				cout << "Error, value must be positive" << endl;
-				cin.ignore(numeric_limits<streamsize>::max(), '\n');
-				continue;
-			}
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-			return true;
-		}
-		else {
-			cout << "Invalid input, please enter a valid number." << endl;
-			cin.clear();
-			cin.ignore(numeric_limits<streamsize>::max(), '\n');
-		}
-	}
-}
-
-bool inputBool(bool& variable, const string& prompt) {
-	int temp;
-	while (true) {
-		cout << prompt;
-		if (cin >> temp && (temp == 0 || temp == 1)) {
-			variable = (temp == 1);
-            if (cin.peek() != '\n') {
-                cout << "Error, please enter only 0 or 1 without extra characters." << endl;
-                cin.clear();
-                cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                continue;
-            }
-			return false;
-		}
-		else {
-			cout << "Invalid input, please enter 0 or 1." << endl;
-			cin.clear();
-			cin.ignore(numeric_limits<streamsize>::max(), '\n');
-			continue;
-		}
-	}
-}
 
 void Menu(Pipe& t,CS& k) {
 	while (1)
@@ -85,62 +36,12 @@ void Menu(Pipe& t,CS& k) {
 		switch (option)
 		{
         case 1: {
-            cout << "Insert pipe name: ";
-            string tempName;
-            getline(cin, tempName);
-            while (tempName.empty()) {
-                cout << "Error, insert pipe name: ";
-                getline(cin, tempName);
-            }
-            t.setName(tempName);
-
-            float tempLenght;
-            inputNumber(tempLenght, "Insert pipe lenght: ", true);
-            t.setLength(tempLenght);
-
-            int tempDiametr;
-            inputNumber(tempDiametr, "Insert pipe diametr: ", true);
-            t.setDiametr(tempDiametr);
-
-            bool tempRepair;
-            inputBool(tempRepair, "Pipe condition(0 or 1): ");
-            t.setRepair(tempRepair);
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cin >> t;
             break;
         }
 
         case 2: {
-            cout << "Insert CS name: ";
-            string tempName;
-            getline(cin, tempName);
-            while (tempName.empty()) {
-                cout << "Error, insert cs name: ";
-                getline(cin, tempName);
-            }
-            k.setName(tempName);
-
-            int tempWorkshop;
-            inputNumber(tempWorkshop, "Insert the number of workshops: ", true);
-            k.setWorkshop(tempWorkshop);
-
-            int tempW_work;
-            while (true) {
-                inputNumber(tempW_work, "Insert the number of workshops in operation: ");
-                if (tempW_work < 0) {
-                    cout << "Error, number cannot be negative. Try again." << endl;
-                    continue;
-                }
-                if (tempW_work <= k.getWorkshop()) {
-                    break;
-                }
-                cout << "Error. There can be no more operating stations than there are total stations.("
-                    << k.getWorkshop() << "). Try again." << endl;
-            }
-            k.setW_work(tempW_work);
-
-            double tempClass;
-            inputNumber(tempClass, "Insert CS class: ", true);
-            k.setClass_cs(tempClass);
+            cin >> k;
             break;
         }
                 
@@ -150,10 +51,10 @@ void Menu(Pipe& t,CS& k) {
             }
             else {
                 if (!t.isEmpty()) {
-                    t.displayInfo(); 
+                    cout << t;
                 }
                 if (!k.isEmpty()) {
-                    k.displayInfo(); 
+                    cout << k;
                 }
             }
             break;
@@ -166,7 +67,7 @@ void Menu(Pipe& t,CS& k) {
             }
 
             while (true) {
-                cout << "\EDIT PIPE" << endl;
+                cout << "EDIT PIPE" << endl;
                 cout << "1. Change name" << endl;
                 cout << "2. Change length" << endl;
                 cout << "3. Change diameter" << endl;
@@ -186,6 +87,7 @@ void Menu(Pipe& t,CS& k) {
                     getline(cin, tempName);
                     t.setName(tempName);
                     cout << "Name updated!" << endl;
+                    break;
                 }
                 case 2: {
                     cout << "Current length: " << t.getLenght() << endl;
@@ -206,7 +108,7 @@ void Menu(Pipe& t,CS& k) {
                 case 4: {
                     cout << "Current repair status: " << (t.getRepair() ? "1" : "0") << endl;
                     bool tempRepair;
-                    inputBool(tempRepair, "Enter new status (0 or 1): ");
+                    inputInRange(tempRepair, "Enter new status (0 or 1): ", false, true);
                     t.setRepair(tempRepair);
                     cout << "Repair status updated!" << endl;
                     break;
@@ -325,7 +227,6 @@ void Menu(Pipe& t,CS& k) {
         {
             string filename;
             cout << "Enter filename to save: ";
-            cin.ignore();
             getline(cin, filename);
 
             ofstream file(filename);
@@ -335,19 +236,11 @@ void Menu(Pipe& t,CS& k) {
             }
 
             if (!t.isEmpty()) {
-                file << "PIPE" << endl;
-                file << t.getName() << endl;
-                file << t.getLenght() << endl;
-                file << t.getDiametr() << endl;
-                file << t.getRepair() << endl;
+                file << t;
             }
 
             if (!k.isEmpty()) { 
-                file << "CS" << endl;
-                file << k.getName() << endl;
-                file << k.getWorkshop() << endl;
-                file << k.getW_work() << endl;
-                file << k.getClass_cs() << endl;
+                file << k;
             }
 
             file.close();
@@ -367,7 +260,6 @@ void Menu(Pipe& t,CS& k) {
         {
             string filename;
             cout << "Enter filename to load: ";
-            cin.ignore();
             getline(cin, filename);
 
             ifstream file(filename);
@@ -384,39 +276,12 @@ void Menu(Pipe& t,CS& k) {
             string line;
             while (getline(file, line)) {
                 if (line == "PIPE") {
-                    string name;
-                    float lenght;
-                    int diametr;
-                    bool repair;
-
-                    getline(file, name);
-                    file >> lenght >> diametr >> repair;
-                    file.ignore();
-
-                    if (!name.empty()) {
-                        tempPipe.setName(name);
-                        tempPipe.setLength(lenght);
-                        tempPipe.setDiametr(diametr);
-                        tempPipe.setRepair(repair);
-                        pipeLoaded = true;
-                    }
+                    file >> tempPipe;
+                    pipeLoaded = true;
                 }
                 else if (line == "CS") {
-                    string name;
-                    int workshop, w_work;
-                    double class_cs;
-
-                    getline(file, name);
-                    file >> workshop >> w_work >> class_cs;
-                    file.ignore();
-
-                    if (!name.empty()) {
-                        tempCS.setName(name);
-                        tempCS.setWorkshop(workshop);
-                        tempCS.setW_work(w_work);
-                        tempCS.setClass_cs(class_cs);
-                        csLoaded = true;
-                    }
+                    file >> tempCS;
+                    csLoaded = true;
                 }
             }
 

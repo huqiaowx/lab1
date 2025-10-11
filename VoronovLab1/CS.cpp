@@ -1,5 +1,8 @@
 #include "CS.h"
 #include <stdexcept>
+#include <fstream>
+#include <iostream>
+#include "utils.h"
 
 int CS::nextId = 1;
 
@@ -45,12 +48,65 @@ bool CS::stopWorkshop() {
 }
 
 void CS::displayInfo() const {
-    std::cout << "Compressor Station ID: " << id << std::endl;
-    std::cout << "Name: " << name << std::endl;
-    std::cout << "Total workshops: " << workshop << std::endl;
-    std::cout << "Working workshops: " << w_work << std::endl;
-    std::cout << "Idle workshops: " << getIdleWorkshops() << std::endl;
-    std::cout << "Idle percentage: " << getIdlePercentage() << "%" << std::endl;
-    std::cout << "Class: " << class_cs << std::endl;
-    std::cout << std::endl;
+    std::cout << *this;
+}
+
+std::ostream& operator<<(std::ostream& out, const CS& cs) {
+    out << "Compressor Station ID: " << cs.id << std::endl;
+    out << "Name: " << cs.name << std::endl;
+    out << "Total workshops: " << cs.workshop << std::endl;
+    out << "Working workshops: " << cs.w_work << std::endl;
+    out << "Idle workshops: " << (cs.workshop - cs.w_work) << std::endl;
+    out << "Idle percentage: " << cs.getIdlePercentage() << "%" << std::endl;
+    out << "Class: " << cs.class_cs << std::endl;
+    out << std::endl;
+    return out;
+}
+
+std::istream& operator>>(std::istream& in, CS& cs) {
+    std::cout << "Insert CS name: ";
+    in.ignore();
+    std::getline(in, cs.name);
+    while (cs.name.empty()) {
+        std::cout << "Error, insert cs name: ";
+        std::getline(in, cs.name);
+    }
+
+    inputNumber(cs.workshop, "Insert the number of workshops: ", true);
+
+    while (true) {
+        inputNumber(cs.w_work, "Insert the number of workshops in operation: ");
+        if (cs.w_work < 0) {
+            std::cout << "Error, number cannot be negative. Try again." << std::endl;
+            continue;
+        }
+        if (cs.w_work <= cs.workshop) {
+            break;
+        }
+        std::cout << "Error. There can be no more operating stations than there are total stations.("
+            << cs.workshop << "). Try again." << std::endl;
+    }
+
+    inputNumber(cs.class_cs, "Insert CS class: ", true);
+
+    return in;
+}
+
+std::ofstream& operator<<(std::ofstream& out, const CS& cs) {
+    out << "CS" << std::endl;
+    out << cs.id << std::endl;
+    out << cs.name << std::endl;
+    out << cs.workshop << std::endl;
+    out << cs.w_work << std::endl;
+    out << cs.class_cs << std::endl;
+    return out;
+}
+
+std::ifstream& operator>>(std::ifstream& in, CS& cs) {
+    in >> cs.id;
+    in.ignore();
+    std::getline(in, cs.name);
+    in >> cs.workshop >> cs.w_work >> cs.class_cs;
+    in.ignore();
+    return in;
 }
