@@ -124,12 +124,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CS.cpp" />
+    <ClCompile Include="CSManager.cpp" />
     <ClCompile Include="Pipe.cpp" />
+    <ClCompile Include="PipeManager.cpp" />
     <ClCompile Include="Source.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CS.h" />
+    <ClInclude Include="CSManager.h" />
     <ClInclude Include="Pipe.h" />
+    <ClInclude Include="PipeManager.h" />
     <ClInclude Include="utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

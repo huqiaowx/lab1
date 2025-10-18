@@ -5,13 +5,18 @@
 #include "Pipe.h"
 #include "CS.h"
 #include "utils.h"
+#include "PipeManager.h"
+#include "CSManager.h"
 
 using namespace std;
 
-void Menu(Pipe& t,CS& k) {
+std::vector<int> foundPipes;   
+std::vector<int> foundStations;
+
+void Menu(PipeManager& pipeManager, CSManager& csManager) {
 	while (1)
 	{
-		cout << "Choose an action\n1. Add pipe\n2. Add compressor station\n3. View all objects\n4. Edit pipe\n5. Edit compressor station\n6. Save\n7. Load\n0. Exit\n";
+		cout << "Choose an action\n1. Add pipe\n2. Add compressor station\n3. View all objects\n4. Edit pipe\n5. Edit compressor station\n6. Search pipes\n7. Search compressor stations\n8. Batch edit pipes\n9. Save\n10. Load\n0. Exit\n";
         string input;
         getline(cin, input); 
 
@@ -36,33 +41,40 @@ void Menu(Pipe& t,CS& k) {
 		switch (option)
 		{
         case 1: {
-            cin >> t;
+            pipeManager.createPipe();
+            cout << "Pipe added successfully!" << endl;
             break;
         }
 
         case 2: {
-            cin >> k;
+            csManager.createCS();
+            cout << "Compressor station added successfully!" << endl;
             break;
         }
                 
         case 3: {
-            if (t.isEmpty() && k.isEmpty()) { 
-                cout << "No data available, please add objects first." << endl;
-            }
-            else {
-                if (!t.isEmpty()) {
-                    cout << t;
-                }
-                if (!k.isEmpty()) {
-                    cout << k;
-                }
-            }
+            cout << "\n PIPES" << endl;
+            pipeManager.displayAllPipes();
+            cout << "\n COMPRESSOR STATIONS" << endl;
+            csManager.displayAllCSs();
             break;
         }
 
         case 4: {
-            if (t.isEmpty()) {
+            if (pipeManager.isEmpty()) {
                 cout << "No pipe to edit, please add a pipe first." << endl;
+                break;
+            }
+
+            cout << "Available pipes:" << endl;
+            pipeManager.displayAllPipes();
+
+            int pipeId;
+            inputNumber(pipeId, "Enter pipe ID to edit: ");
+
+            Pipe* pipe = pipeManager.getPipe(pipeId);
+            if (!pipe) {
+                cout << "Pipe with ID " << pipeId << " not found!" << endl;
                 break;
             }
 
@@ -80,36 +92,36 @@ void Menu(Pipe& t,CS& k) {
 
                 switch (pipeChoice) {
                 case 1: {
-                    cout << "Current name: " << t.getName() << endl;
+                    cout << "Current name: " << pipe->getName() << endl;
                     cout << "Enter new name: ";
                     cin.ignore();
                     string tempName;
                     getline(cin, tempName);
-                    t.setName(tempName);
+                    pipe->setName(tempName);
                     cout << "Name updated!" << endl;
                     break;
                 }
                 case 2: {
-                    cout << "Current length: " << t.getLenght() << endl;
+                    cout << "Current length: " << pipe->getLenght() << endl;
                     float tempLenght;
                     inputNumber(tempLenght, "Enter new length: ", true);
-                    t.setLength(tempLenght);
+                    pipe->setLength(tempLenght);
                     cout << "Length updated!" << endl;
                     break;
                 }
                 case 3: {
-                    cout << "Current diameter: " << t.getDiametr() << endl;
+                    cout << "Current diameter: " << pipe->getDiametr() << endl;
                     int tempDiametr;
                     inputNumber(tempDiametr, "Enter new diameter: ", true);
-                    t.setDiametr(tempDiametr);
+                    pipe->setDiametr(tempDiametr);
                     cout << "Diameter updated!" << endl;
                     break;
                 }
                 case 4: {
-                    cout << "Current repair status: " << (t.getRepair() ? "1" : "0") << endl;
+                    cout << "Current repair status: " << (pipe->getRepair() ? "1" : "0") << endl;
                     bool tempRepair;
                     inputInRange(tempRepair, "Enter new status (0 or 1): ", false, true);
-                    t.setRepair(tempRepair);
+                    pipe->setRepair(tempRepair);
                     cout << "Repair status updated!" << endl;
                     break;
                 }
@@ -128,13 +140,24 @@ void Menu(Pipe& t,CS& k) {
         }
 
         case 5: {
-            if (k.isEmpty()) { 
+            if (csManager.isEmpty()) {
                 cout << "No compressor station to edit, please add a compressor station first." << endl;
+                break;
+            }
+            cout << "Available compressor stations:" << endl;
+            csManager.displayAllCSs();
+
+            int csId;
+            inputNumber(csId, "Enter compressor station ID to edit: ");
+
+            CS* cs = csManager.getCS(csId);
+            if (!cs) {
+                cout << "Compressor station with ID " << csId << " not found!" << endl;
                 break;
             }
 
             while (true) {
-                cout << "\nEDIT COMPRESSOR STATION ID: " << k.getId() << endl; 
+                cout << "\nEDIT COMPRESSOR STATION ID: " << cs->getId() << endl;
                 cout << "1. Change name" << endl;
                 cout << "2. Change total workshops" << endl;
                 cout << "3. Change working workshops" << endl;
@@ -149,26 +172,26 @@ void Menu(Pipe& t,CS& k) {
 
                 switch (csChoice) {
                 case 1: {
-                    cout << "Current name: " << k.getName() << endl;
+                    cout << "Current name: " << cs->getName() << endl;
                     cout << "Enter new name: ";
                     cin.ignore();
                     string newName;
                     getline(cin, newName);
-                    k.setName(newName);
+                    cs->setName(newName);
                     cout << "Name updated!" << endl;
                     break;
                 }
                 case 2: {
-                    cout << "Current total workshops: " << k.getWorkshop() << endl;
+                    cout << "Current total workshops: " << cs->getWorkshop() << endl;
                     int newTotal;
                     inputNumber(newTotal, "Enter new total workshops: ", true);
-                    k.setWorkshop(newTotal);
+                    cs->setWorkshop(newTotal);
                     cout << "Total workshops updated!" << endl;
                     break;
                 }
                 case 3: {
-                    cout << "Current working workshops: " << k.getW_work() << endl;
-                    cout << "Total workshops: " << k.getWorkshop() << endl;
+                    cout << "Current working workshops: " << cs->getW_work() << endl;
+                    cout << "Total workshops: " << cs->getWorkshop() << endl;
                     int newWorking;
                     while (true) {
                         inputNumber(newWorking, "Enter new working workshops: ");
@@ -176,35 +199,35 @@ void Menu(Pipe& t,CS& k) {
                             cout << "Error, cannot be negative. Try again." << endl;
                             continue;
                         }
-                        if (newWorking > k.getWorkshop()) {
-                            cout << "Error, cannot exceed total workshops (" << k.getWorkshop() << "). Try again." << endl;
+                        if (newWorking > cs->getWorkshop()) {
+                            cout << "Error, cannot exceed total workshops (" << cs->getWorkshop() << "). Try again." << endl;
                             continue;
                         }
                         break;
                     }
-                    k.setW_work(newWorking);
+                    cs->setW_work(newWorking);
                     cout << "Working workshops updated!" << endl;
                     break;
                 }
                 case 4: {
-                    cout << "Current class: " << k.getClass_cs() << endl;
+                    cout << "Current class: " << cs->getClass_cs() << endl;
                     double newClass;
                     inputNumber(newClass, "Enter new class: ", true);
-                    k.setClass_cs(newClass);
+                    cs->setClass_cs(newClass);
                     cout << "Class updated!" << endl;
                     break;
                 }
                 case 5:
-                    if (k.startWorkshop()) { 
-                        cout << "Workshop started, now working: " << k.getW_work() << " of " << k.getWorkshop() << endl;
+                    if (cs->startWorkshop()) {
+                        cout << "Workshop started, now working: " << cs->getW_work() << " of " << cs->getWorkshop() << endl;
                     }
                     else {
                         cout << "All workshops are already working!" << endl;
                     }
                     break;
                 case 6:
-                    if (k.stopWorkshop()) { 
-                        cout << "Workshop stopped, now working: " << k.getW_work() << " of " << k.getWorkshop() << endl;
+                    if (cs->stopWorkshop()) {
+                        cout << "Workshop stopped, now working: " << cs->getW_work() << " of " << cs->getWorkshop() << endl;
                     }
                     else {
                         cout << "No workshops are working!" << endl;
@@ -224,90 +247,123 @@ void Menu(Pipe& t,CS& k) {
         }
 
         case 6:
-        {
-            string filename;
-            cout << "Enter filename to save: ";
-            getline(cin, filename);
-
-            ofstream file(filename);
-            if (!file) {
-                cout << "Error opening file for writing!" << endl;
+            if (pipeManager.isEmpty()) {
+                cout << "No pipes available for search." << endl;
                 break;
             }
 
-            if (!t.isEmpty()) {
-                file << t;
+            cout << "Search pipes by:\n";
+            cout << "1. Name\n";
+            cout << "2. Repair status\n";
+            cout << "Choose search type: ";
+
+            int searchType;
+            cin >> searchType;
+            cin.ignore();
+
+            switch (searchType) {
+            case 1: {
+                cout << "Enter name to search: ";
+                string name;
+                getline(cin, name);
+                foundPipes = SearchUtils::findPipesByName(pipeManager.getPipes(), name);
+                break;
+            }
+            case 2: {
+                bool repairStatus;
+                inputInRange(repairStatus, "Enter repair status (0 - operational, 1 - in repair): ", false, true);
+                foundPipes = SearchUtils::findPipesByRepairStatus(pipeManager.getPipes(), repairStatus);
+                break;
+            }
+            default:
+                cout << "Invalid search type!" << endl;
+                break;
             }
 
-            if (!k.isEmpty()) { 
-                file << k;
-            }
-
-            file.close();
-
-            if (t.isEmpty() && k.isEmpty()) {
-                cout << "No data to save!" << endl;
+            if (!foundPipes.empty()) {
+                cout << "Found " << foundPipes.size() << " pipes:" << endl;
+                pipeManager.displayPipes(foundPipes);
             }
             else {
-                cout << "Data saved successfully to " << filename << endl;
-                if (!t.isEmpty()) cout << "- Pipe data saved" << endl;
-                if (!k.isEmpty()) cout << "- Compressor station data saved" << endl;
+                cout << "No pipes found." << endl;
+            }
+            break;
+
+        case 7: { 
+            if (csManager.isEmpty()) {
+                cout << "No compressor stations available for search." << endl;
+                break;
+            }
+
+            cout << "Search compressor stations by:\n";
+            cout << "1. Name\n";
+            cout << "2. Idle percentage\n";
+            cout << "Choose search type: ";
+
+            int searchType;
+            cin >> searchType;
+            cin.ignore();
+
+            switch (searchType) {
+            case 1: {
+                cout << "Enter name to search: ";
+                string name;
+                getline(cin, name);
+                foundStations = SearchUtils::findCSsByName(csManager.getStations(), name);
+                break;
+            }
+            case 2: {
+                double minPercent, maxPercent;
+                inputNumber(minPercent, "Enter minimum idle percentage: ");
+                inputNumber(maxPercent, "Enter maximum idle percentage: ");
+                foundStations = SearchUtils::findCSsByIdlePercentage(csManager.getStations(), minPercent, maxPercent);
+                break;
+            }
+            default:
+                cout << "Invalid search type!" << endl;
+                break;
+            }
+
+            if (!foundStations.empty()) {
+                cout << "Found " << foundStations.size() << " compressor stations:" << endl;
+                csManager.displayCSs(foundStations);
+            }
+            else {
+                cout << "No compressor stations found." << endl;
             }
             break;
         }
 
-        case 7:
+        case 8: { 
+            if (foundPipes.empty()) {
+                cout << "No pipes selected. Please search for pipes first (option 6)." << endl;
+                break;
+            }
+            pipeManager.batchEditPipes(foundPipes);
+            break;
+        }
+        case 9:
+        {
+            string filename;
+            cout << "Enter filename to save: ";
+            getline(cin, filename);
+            pipeManager.saveToFile(filename + "_pipes.txt");
+            csManager.saveToFile(filename + "_cs.txt");
+
+            cout << "Data saved successfully!" << endl;
+            break;
+        }
+
+        case 10:
         {
             string filename;
             cout << "Enter filename to load: ";
             getline(cin, filename);
 
-            ifstream file(filename);
-            if (!file) {
-                cout << "Error opening file for reading!" << endl;
-                break;
-            }
+            pipeManager.loadFromFile(filename + "_pipes.txt");
+            csManager.loadFromFile(filename + "_cs.txt");
 
-            Pipe tempPipe;
-            CS tempCS;
-            bool pipeLoaded = false;
-            bool csLoaded = false;
-
-            string line;
-            while (getline(file, line)) {
-                if (line == "PIPE") {
-                    file >> tempPipe;
-                    pipeLoaded = true;
-                }
-                else if (line == "CS") {
-                    file >> tempCS;
-                    csLoaded = true;
-                }
-            }
-
-            file.close();
-
-            if (pipeLoaded) {
-                t = tempPipe;
-                cout << "Pipe data loaded successfully!" << endl;
-                cout << "Name: " << t.getName() << ", Length: " << t.getLenght() << ", Diameter: " << t.getDiametr() << endl;
-            }
-            else {
-                cout << "No valid pipe data found in file." << endl;
-            }
-
-            if (csLoaded) {
-                k = tempCS;
-                cout << "Compressor station data loaded successfully!" << endl;
-                cout << "Name: " << k.getName() << ", Workshops: " << k.getWorkshop() << "/" << k.getW_work() << endl;
-            }
-            else {
-                cout << "No valid compressor station data found in file." << endl;
-            }
-
-            if (!pipeLoaded && !csLoaded) {
-                cout << "File is empty or contains invalid data!" << endl;
-            }
+            cout << "Data loaded successfully!" << endl;
             break;
         }
 
@@ -323,7 +379,8 @@ void Menu(Pipe& t,CS& k) {
 
 int main()
 {
-	Pipe truba;
-	CS cstation;
-	Menu(truba,cstation);
+    PipeManager pipeManager;
+    CSManager csManager;
+    Menu(pipeManager, csManager);
+    return 0;
 }

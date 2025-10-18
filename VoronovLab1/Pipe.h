@@ -15,6 +15,7 @@ public:
     Pipe();
     Pipe(const std::string& name, double length, int diameter, bool inRepair = false);
 
+    static int getNextId() { return nextId; }
     int getId() const { return id; }
     std::string getName() const { return name; }
     double getLenght() const { return length; }

@@ -65,7 +65,6 @@ std::ostream& operator<<(std::ostream& out, const CS& cs) {
 
 std::istream& operator>>(std::istream& in, CS& cs) {
     std::cout << "Insert CS name: ";
-    in.ignore();
     std::getline(in, cs.name);
     while (cs.name.empty()) {
         std::cout << "Error, insert cs name: ";

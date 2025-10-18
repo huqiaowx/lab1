@@ -2,6 +2,11 @@
 #include <iostream>
 #include <string>
 #include <limits>
+#include <vector>
+#include <functional>
+#include <unordered_map>
+#include "Pipe.h"
+#include "CS.h"  
 
 template<typename T>
 inline bool inputNumber(T& variable, const std::string& prompt, bool positiveOnly = false) {
@@ -87,5 +92,43 @@ inline bool inputInRange<bool>(bool& variable, const std::string& prompt, bool m
             std::cin.clear();
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         }
+    }
+}
+
+template<typename Key, typename Value, typename Predicate>
+std::vector<Key> findInMap(const std::unordered_map<Key, Value>& map, Predicate predicate) {
+    std::vector<Key> result;
+    for (const auto& pair : map) {
+        if (predicate(pair.second)) {
+            result.push_back(pair.first);
+        }
+    }
+    return result;
+}
+
+namespace SearchUtils {
+    inline std::vector<int> findPipesByName(const std::unordered_map<int, Pipe>& pipes, const std::string& name) {
+        return findInMap(pipes, [&name](const Pipe& pipe) {
+            return pipe.getName().find(name) != std::string::npos;
+            });
+    }
+
+    inline std::vector<int> findPipesByRepairStatus(const std::unordered_map<int, Pipe>& pipes, bool inRepair) {
+        return findInMap(pipes, [inRepair](const Pipe& pipe) {
+            return pipe.getRepair() == inRepair;
+            });
+    }
+
+    inline std::vector<int> findCSsByName(const std::unordered_map<int, CS>& stations, const std::string& name) {
+        return findInMap(stations, [&name](const CS& cs) {
+            return cs.getName().find(name) != std::string::npos;
+            });
+    }
+
+    inline std::vector<int> findCSsByIdlePercentage(const std::unordered_map<int, CS>& stations, double minPercent, double maxPercent = 100.0) {
+        return findInMap(stations, [minPercent, maxPercent](const CS& cs) {
+            double idlePercent = cs.getIdlePercentage();
+            return idlePercent >= minPercent && idlePercent <= maxPercent;
+            });
     }
 }

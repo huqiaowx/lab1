@@ -15,6 +15,7 @@ public:
     CS();
     CS(const std::string& name, int workshop, int w_work, double class_cs);
 
+    static int getNextId() { return nextId; }
     int getId() const { return id; }
     std::string getName() const { return name; }
     int getWorkshop() const { return workshop; }

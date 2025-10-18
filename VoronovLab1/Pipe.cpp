@@ -27,7 +27,6 @@ std::ostream& operator<<(std::ostream& out, const Pipe& pipe) {
 
 std::istream& operator>>(std::istream& in, Pipe& pipe) {
     std::cout << "Insert pipe name: ";
-    in.ignore();
     std::getline(in, pipe.name);
     while (pipe.name.empty()) {
         std::cout << "Error, insert pipe name: ";
