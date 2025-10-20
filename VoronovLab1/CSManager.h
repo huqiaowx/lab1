@@ -16,10 +16,6 @@ public:
     void deleteCSs(const std::vector<int>& ids);
 
     CS* getCS(int id);
-
-    bool editCS(int id);
-    void batchEditCSs(const std::vector<int>& ids);
-
     void displayAllCSs() const;
     void displayCSs(const std::vector<int>& ids) const;
 

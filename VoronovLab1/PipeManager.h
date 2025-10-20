@@ -17,7 +17,6 @@ public:
 
     Pipe* getPipe(int id);
 
-    bool editPipe(int id);
     void batchEditPipes(const std::vector<int>& ids);
 
     void displayAllPipes() const;

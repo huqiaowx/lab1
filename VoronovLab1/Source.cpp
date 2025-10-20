@@ -16,7 +16,7 @@ std::vector<int> foundStations;
 void Menu(PipeManager& pipeManager, CSManager& csManager) {
 	while (1)
 	{
-		cout << "Choose an action\n1. Add pipe\n2. Add compressor station\n3. View all objects\n4. Edit pipe\n5. Edit compressor station\n6. Search pipes\n7. Search compressor stations\n8. Batch edit pipes\n9. Save\n10. Load\n0. Exit\n";
+		cout << "Choose an action\n1. Add pipe\n2. Add compressor station\n3. View all objects\n4. Edit pipe\n5. Edit compressor station\n6. Search pipes\n7. Search compressor stations\n8. Batch edit pipes\n9. Delete pipe\n10. Delete compressor station\n11. Save\n12. Load\n0. Exit\n";
         string input;
         getline(cin, input); 
 
@@ -339,10 +339,119 @@ void Menu(PipeManager& pipeManager, CSManager& csManager) {
                 cout << "No pipes selected. Please search for pipes first (option 6)." << endl;
                 break;
             }
-            pipeManager.batchEditPipes(foundPipes);
+
+            cout << "Found " << foundPipes.size() << " pipes. Choose editing mode:\n";
+            cout << "1. Edit all found pipes\n";
+            cout << "2. Select specific pipes to edit\n";
+            cout << "Choose mode: ";
+
+            int mode;
+            cin >> mode;
+            cin.ignore();
+
+            std::vector<int> pipesToEdit;
+
+            switch (mode) {
+            case 1: {
+                pipesToEdit = foundPipes;
+                cout << "Editing all " << pipesToEdit.size() << " pipes." << endl;
+                break;
+            }
+            case 2: {
+                cout << "Select pipes to edit (enter IDs, 0 to finish):\n";
+                pipeManager.displayPipes(foundPipes);
+
+                while (true) {
+                    int selectedId;
+                    inputNumber(selectedId, "Enter pipe ID to select (0 to finish): ");
+
+                    if (selectedId == 0) {
+                        break;
+                    }
+
+                    if (std::find(foundPipes.begin(), foundPipes.end(), selectedId) != foundPipes.end()) {
+                        if (std::find(pipesToEdit.begin(), pipesToEdit.end(), selectedId) == pipesToEdit.end()) {
+                            pipesToEdit.push_back(selectedId);
+                            cout << "Pipe ID " << selectedId << " added to selection." << endl;
+                        }
+                        else {
+                            cout << "Pipe ID " << selectedId << " already selected." << endl;
+                        }
+                    }
+                    else {
+                        cout << "Pipe ID " << selectedId << " not found in search results." << endl;
+                    }
+                }
+
+                if (pipesToEdit.empty()) {
+                    cout << "No pipes selected for editing." << endl;
+                    break;
+                }
+
+                cout << "Selected " << pipesToEdit.size() << " pipes for editing:" << endl;
+                pipeManager.displayPipes(pipesToEdit);
+                break;
+            }
+            default:
+                cout << "Invalid mode!" << endl;
+                break;
+            }
+
+            if (!pipesToEdit.empty()) {
+                pipeManager.batchEditPipes(pipesToEdit);
+            }
             break;
         }
-        case 9:
+        case 9: {
+            if (pipeManager.isEmpty()) {
+                cout << "No pipes available to delete." << endl;
+                break;
+            }
+
+            cout << "Available pipes:" << endl;
+            pipeManager.displayAllPipes();
+
+            int pipeId;
+            inputNumber(pipeId, "Enter pipe ID to delete: ");
+
+            if (pipeManager.deletePipe(pipeId)) {
+                cout << "Pipe with ID " << pipeId << " deleted successfully!" << endl;
+                auto it = std::find(foundPipes.begin(), foundPipes.end(), pipeId);
+                if (it != foundPipes.end()) {
+                    foundPipes.erase(it);
+                }
+            }
+            else {
+                cout << "Pipe with ID " << pipeId << " not found!" << endl;
+            }
+            break;
+        }
+
+        case 10: { 
+            if (csManager.isEmpty()) {
+                cout << "No compressor stations available to delete." << endl;
+                break;
+            }
+
+            cout << "Available compressor stations:" << endl;
+            csManager.displayAllCSs();
+
+            int csId;
+            inputNumber(csId, "Enter compressor station ID to delete: ");
+
+            if (csManager.deleteCS(csId)) {
+                cout << "Compressor station with ID " << csId << " deleted successfully!" << endl;
+                auto it = std::find(foundStations.begin(), foundStations.end(), csId);
+                if (it != foundStations.end()) {
+                    foundStations.erase(it);
+                }
+            }
+            else {
+                cout << "Compressor station with ID " << csId << " not found!" << endl;
+            }
+            break;
+        }
+        case 11:
         {
             string filename;
             cout << "Enter filename to save: ";
@@ -354,7 +463,7 @@ void Menu(PipeManager& pipeManager, CSManager& csManager) {
             break;
         }
 
-        case 10:
+        case 12:
         {
             string filename;
             cout << "Enter filename to load: ";

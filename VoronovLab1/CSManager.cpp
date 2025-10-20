@@ -92,16 +92,3 @@ void CSManager::loadFromFile(const std::string& filename) {
     file.close();
     std::cout << "Compressor stations loaded from " << filename << std::endl;
 }
-
-bool CSManager::editCS(int id) {
-    CS* cs = getCS(id);
-    if (!cs) return false;
-
-    return true;
-}
-
-void CSManager::batchEditCSs(const std::vector<int>& ids) {
-    for (int id : ids) {
-        editCS(id);
-    }
-}

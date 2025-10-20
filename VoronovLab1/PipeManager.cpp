@@ -93,13 +93,6 @@ void PipeManager::loadFromFile(const std::string& filename) {
     std::cout << "Pipes loaded from " << filename << std::endl;
 }
 
-bool PipeManager::editPipe(int id) {
-    Pipe* pipe = getPipe(id);
-    if (!pipe) return false;
-
-    return true;
-}
-
 void PipeManager::batchEditPipes(const std::vector<int>& ids) {
     if (ids.empty()) {
         std::cout << "No pipes selected for batch editing." << std::endl;
