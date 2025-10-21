@@ -28,14 +28,16 @@ std::ostream& operator<<(std::ostream& out, const Pipe& pipe) {
 std::istream& operator>>(std::istream& in, Pipe& pipe) {
     std::cout << "Insert pipe name: ";
     std::getline(in, pipe.name);
+    logInput(pipe.name);
+
     while (pipe.name.empty()) {
         std::cout << "Error, insert pipe name: ";
         std::getline(in, pipe.name);
+        logInput(pipe.name);
     }
 
     inputNumber(pipe.length, "Insert pipe length: ", true);
     inputNumber(pipe.diameter, "Insert pipe diameter: ", true);
-
     inputInRange(pipe.inRepair, "Pipe condition (0 for operational, 1 for repair): ", false, true);
 
     return in;

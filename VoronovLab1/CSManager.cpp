@@ -56,7 +56,7 @@ std::vector<int> CSManager::getAllIds() const {
 }
 
 void CSManager::saveToFile(const std::string& filename) const {
-    std::ofstream file(filename);
+    std::ofstream file(filename, std::ios::app);
     if (!file) {
         std::cout << "Error opening file for writing!" << std::endl;
         return;
@@ -77,9 +77,6 @@ void CSManager::loadFromFile(const std::string& filename) {
         return;
     }
 
-    stations.clear();
-    CS::resetIdCounter();
-
     std::string line;
     while (getline(file, line)) {
         if (line == "CS") {
@@ -87,8 +84,12 @@ void CSManager::loadFromFile(const std::string& filename) {
             file >> cs;
             stations[cs.getId()] = cs;
         }
+        else if (line == "PIPE") {
+            for (int i = 0; i < 5; ++i) {
+                getline(file, line);
+            }
+        }
     }
-
     file.close();
     std::cout << "Compressor stations loaded from " << filename << std::endl;
 }

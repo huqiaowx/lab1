@@ -56,7 +56,7 @@ std::vector<int> PipeManager::getAllIds() const {
 }
 
 void PipeManager::saveToFile(const std::string& filename) const {
-    std::ofstream file(filename);
+    std::ofstream file(filename, std::ios::app);
     if (!file) {
         std::cout << "Error opening file for writing!" << std::endl;
         return;
@@ -77,9 +77,6 @@ void PipeManager::loadFromFile(const std::string& filename) {
         return;
     }
 
-    pipes.clear();
-    Pipe::resetIdCounter();
-
     std::string line;
     while (getline(file, line)) {
         if (line == "PIPE") {
@@ -87,8 +84,12 @@ void PipeManager::loadFromFile(const std::string& filename) {
             file >> pipe;
             pipes[pipe.getId()] = pipe;
         }
+        else if (line == "CS") {
+            for (int i = 0; i < 5; ++i) {
+                getline(file, line);
+            }
+        }
     }
-
     file.close();
     std::cout << "Pipes loaded from " << filename << std::endl;
 }

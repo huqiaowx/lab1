@@ -18,7 +18,8 @@ void Menu(PipeManager& pipeManager, CSManager& csManager) {
 	{
 		cout << "Choose an action\n1. Add pipe\n2. Add compressor station\n3. View all objects\n4. Edit pipe\n5. Edit compressor station\n6. Search pipes\n7. Search compressor stations\n8. Batch edit pipes\n9. Delete pipe\n10. Delete compressor station\n11. Save\n12. Load\n0. Exit\n";
         string input;
-        getline(cin, input); 
+        getline(cin, input);
+        logInput(input);
 
         if (input.empty()) {
             continue;
@@ -89,6 +90,7 @@ void Menu(PipeManager& pipeManager, CSManager& csManager) {
 
                 int pipeChoice;
                 cin >> pipeChoice;
+                logInput(to_string(pipeChoice));
 
                 switch (pipeChoice) {
                 case 1: {
@@ -98,6 +100,7 @@ void Menu(PipeManager& pipeManager, CSManager& csManager) {
                     string tempName;
                     getline(cin, tempName);
                     pipe->setName(tempName);
+                    logInput(tempName);
                     cout << "Name updated!" << endl;
                     break;
                 }
@@ -169,6 +172,7 @@ void Menu(PipeManager& pipeManager, CSManager& csManager) {
 
                 int csChoice;
                 cin >> csChoice;
+                logInput(to_string(csChoice));  
 
                 switch (csChoice) {
                 case 1: {
@@ -178,6 +182,7 @@ void Menu(PipeManager& pipeManager, CSManager& csManager) {
                     string newName;
                     getline(cin, newName);
                     cs->setName(newName);
+                    logInput(newName);
                     cout << "Name updated!" << endl;
                     break;
                 }
@@ -259,6 +264,7 @@ void Menu(PipeManager& pipeManager, CSManager& csManager) {
 
             int searchType;
             cin >> searchType;
+            logInput(to_string(searchType));
             cin.ignore();
 
             switch (searchType) {
@@ -266,6 +272,7 @@ void Menu(PipeManager& pipeManager, CSManager& csManager) {
                 cout << "Enter name to search: ";
                 string name;
                 getline(cin, name);
+                logInput(name);
                 foundPipes = SearchUtils::findPipesByName(pipeManager.getPipes(), name);
                 break;
             }
@@ -302,6 +309,7 @@ void Menu(PipeManager& pipeManager, CSManager& csManager) {
 
             int searchType;
             cin >> searchType;
+            logInput(to_string(searchType));
             cin.ignore();
 
             switch (searchType) {
@@ -309,6 +317,7 @@ void Menu(PipeManager& pipeManager, CSManager& csManager) {
                 cout << "Enter name to search: ";
                 string name;
                 getline(cin, name);
+                logInput(name);
                 foundStations = SearchUtils::findCSsByName(csManager.getStations(), name);
                 break;
             }
@@ -347,6 +356,7 @@ void Menu(PipeManager& pipeManager, CSManager& csManager) {
 
             int mode;
             cin >> mode;
+            logInput(to_string(mode));
             cin.ignore();
 
             std::vector<int> pipesToEdit;
@@ -456,8 +466,13 @@ void Menu(PipeManager& pipeManager, CSManager& csManager) {
             string filename;
             cout << "Enter filename to save: ";
             getline(cin, filename);
-            pipeManager.saveToFile(filename + "_pipes.txt");
-            csManager.saveToFile(filename + "_cs.txt");
+            logInput(filename);
+
+            std::ofstream clearFile(filename, std::ios::trunc);
+            clearFile.close();
+
+            pipeManager.saveToFile(filename);
+            csManager.saveToFile(filename);
 
             cout << "Data saved successfully!" << endl;
             break;
@@ -468,9 +483,15 @@ void Menu(PipeManager& pipeManager, CSManager& csManager) {
             string filename;
             cout << "Enter filename to load: ";
             getline(cin, filename);
+            logInput(filename);
 
-            pipeManager.loadFromFile(filename + "_pipes.txt");
-            csManager.loadFromFile(filename + "_cs.txt");
+            pipeManager = PipeManager();
+            csManager = CSManager();
+            Pipe::resetIdCounter();
+            CS::resetIdCounter();
+
+            pipeManager.loadFromFile(filename);
+            csManager.loadFromFile(filename);
 
             cout << "Data loaded successfully!" << endl;
             break;
