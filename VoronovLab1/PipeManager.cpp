@@ -1,4 +1,5 @@
 #include "PipeManager.h"
+#include"utils.h"
 #include <fstream>
 #include <iostream>
 
@@ -10,6 +11,26 @@ Pipe& PipeManager::createPipe() {
     int newId = Pipe::getNextId();
     Pipe& pipe = pipes[newId];
     std::cin >> pipe;
+    return pipe;
+}
+
+Pipe& PipeManager::createPipeWithoutDiameter() {
+    int newId = Pipe::getNextId();
+    Pipe& pipe = pipes[newId];
+
+    std::cout << "Insert pipe name: ";
+    std::string name;
+    std::getline(std::cin, name);
+
+    double length;
+    inputNumber(length, "Insert pipe length: ", true);
+
+    bool inRepair;
+    inputInRange(inRepair, "Pipe condition (0 for operational, 1 for repair): ", false, true);
+
+    pipe.setName(name);
+    pipe.setLength(length);
+    pipe.setRepair(inRepair);
     return pipe;
 }
 
@@ -78,17 +99,27 @@ void PipeManager::loadFromFile(const std::string& filename) {
     }
 
     std::string line;
+    int maxId = 0;
     while (getline(file, line)) {
         if (line == "PIPE") {
             Pipe pipe;
             file >> pipe;
             pipes[pipe.getId()] = pipe;
+            if (pipe.getId() > maxId) {
+                maxId = pipe.getId();
+            }
         }
         else if (line == "CS") {
             for (int i = 0; i < 5; ++i) {
                 getline(file, line);
             }
         }
+    }
+    if (maxId > 0) {
+        Pipe::resetIdCounter();
+        for (int i = 1; i <= maxId; i++) {
+        }
+        Pipe::nextId = maxId + 1; 
     }
     file.close();
     std::cout << "Pipes loaded from " << filename << std::endl;

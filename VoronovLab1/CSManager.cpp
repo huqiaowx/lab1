@@ -78,17 +78,24 @@ void CSManager::loadFromFile(const std::string& filename) {
     }
 
     std::string line;
+    int maxId = 0;
     while (getline(file, line)) {
         if (line == "CS") {
             CS cs;
             file >> cs;
             stations[cs.getId()] = cs;
+            if (cs.getId() > maxId) {
+                maxId = cs.getId();
+            }
         }
         else if (line == "PIPE") {
             for (int i = 0; i < 5; ++i) {
                 getline(file, line);
             }
         }
+    }
+    if (maxId > 0) {
+        CS::nextId = maxId + 1;
     }
     file.close();
     std::cout << "Compressor stations loaded from " << filename << std::endl;

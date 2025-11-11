@@ -11,6 +11,7 @@ private:
 public:
     void addPipe(const Pipe& pipe);
     Pipe& createPipe();
+    Pipe& createPipeWithoutDiameter();
 
     bool deletePipe(int id);
     void deletePipes(const std::vector<int>& ids);

@@ -4,6 +4,7 @@
 #include <limits>
 #include "Pipe.h"
 #include "CS.h"
+#include "Network.h"
 #include "utils.h"
 #include "PipeManager.h"
 #include "CSManager.h"
@@ -13,10 +14,10 @@ using namespace std;
 std::vector<int> foundPipes;   
 std::vector<int> foundStations;
 
-void Menu(PipeManager& pipeManager, CSManager& csManager) {
+void Menu(PipeManager& pipeManager, CSManager& csManager, Network& network) {
 	while (1)
 	{
-		cout << "Choose an action\n1. Add pipe\n2. Add compressor station\n3. View all objects\n4. Edit pipe\n5. Edit compressor station\n6. Search pipes\n7. Search compressor stations\n8. Batch edit pipes\n9. Delete pipe\n10. Delete compressor station\n11. Save\n12. Load\n0. Exit\n";
+		cout << "Choose an action\n1. Add pipe\n2. Add compressor station\n3. View all objects\n4. Edit pipe\n5. Edit compressor station\n6. Search pipes\n7. Search compressor stations\n8. Batch edit pipes\n9. Delete pipe\n10. Delete compressor station\n11. Save\n12. Load\n13. View network\n14. Connect CS with pipe\n15. Disconnect pipe\n16. Topological sort\n0. Exit\n";
         string input;
         getline(cin, input);
         logInput(input);
@@ -497,6 +498,72 @@ void Menu(PipeManager& pipeManager, CSManager& csManager) {
             break;
         }
 
+        case 13: {
+            network.displayNetwork();
+            break;
+        }
+        case 14: {
+            if (csManager.getCount() < 2) {
+                cout << "Need at least two CS to connect!" << endl;
+                break;
+            }
+
+            cout << "Available CS:" << endl;
+            csManager.displayAllCSs();
+
+            int csInId, csOutId, diameter;
+            inputNumber(csInId, "Enter CS input ID: ");
+            inputNumber(csOutId, "Enter CS output ID: ");
+
+            if (!csManager.getCS(csInId) || !csManager.getCS(csOutId)) {
+                cout << "Error: One or both CS not found!" << endl;
+                break;
+            }
+
+            cout << "Available diameters: 500, 700, 1000, 1400" << endl;
+            inputNumber(diameter, "Enter pipe diameter: ");
+
+            if (network.connectCS(csInId, csOutId, diameter, pipeManager)) {
+                cout << "Connection created successfully!" << endl;
+            }
+            else {
+                cout << "Failed to create connection!" << endl;
+            }
+            break;
+        }
+        case 15: {
+            if (network.isEmpty()) {
+                cout << "No connections to disconnect!" << endl;
+                break;
+            }
+
+            network.displayNetwork();
+            int pipeId;
+            inputNumber(pipeId, "Enter pipe ID to disconnect: ");
+
+            if (network.disconnectPipe(pipeId)) {
+                cout << "Pipe disconnected successfully!" << endl;
+            }
+            else {
+                cout << "Pipe not found in connections!" << endl;
+            }
+            break;
+        }
+        case 16: {
+            auto sorted = network.topologicalSort();
+            if (!sorted.empty()) {
+                cout << "Topological sort: ";
+                for (const auto& cs : sorted) {
+                    cout << "CS " << cs.first << " ";
+                }
+                cout << endl;
+            }
+            else {
+                cout << "Graph has cycles or is empty!" << endl;
+            }
+            break;
+        }
+
         case 0:
             return;
 
@@ -511,6 +578,7 @@ int main()
 {
     PipeManager pipeManager;
     CSManager csManager;
-    Menu(pipeManager, csManager);
+    Network network;
+    Menu(pipeManager, csManager, network);
     return 0;
 }
