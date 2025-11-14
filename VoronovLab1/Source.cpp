@@ -43,13 +43,15 @@ void Menu(PipeManager& pipeManager, CSManager& csManager, Network& network) {
 		switch (option)
 		{
         case 1: {
-            pipeManager.createPipe();
+            Pipe& pipe = pipeManager.createPipe();
+            network.addPipe(pipe);
             cout << "Pipe added successfully!" << endl;
             break;
         }
 
         case 2: {
-            csManager.createCS();
+            CS& cs = csManager.createCS();
+            network.addCS(cs);
             cout << "Compressor station added successfully!" << endl;
             break;
         }
@@ -488,11 +490,19 @@ void Menu(PipeManager& pipeManager, CSManager& csManager, Network& network) {
 
             pipeManager = PipeManager();
             csManager = CSManager();
+            network = Network();
             Pipe::resetIdCounter();
             CS::resetIdCounter();
 
             pipeManager.loadFromFile(filename);
             csManager.loadFromFile(filename);
+
+            for (const auto& pipe : pipeManager.getPipes()) {
+                network.addPipe(pipe.second);
+            }
+            for (const auto& cs : csManager.getStations()) {
+                network.addCS(cs.second);
+            }
 
             cout << "Data loaded successfully!" << endl;
             break;
@@ -550,16 +560,18 @@ void Menu(PipeManager& pipeManager, CSManager& csManager, Network& network) {
             break;
         }
         case 16: {
+            if (network.isEmpty()) {
+                cout << "Network is empty!" << endl;
+                break;
+            }
+
             auto sorted = network.topologicalSort();
             if (!sorted.empty()) {
-                cout << "Topological sort: ";
-                for (const auto& cs : sorted) {
-                    cout << "CS " << cs.first << " ";
+                cout << "Topological sort order: ";
+                for (int i = 0; i < sorted.size(); i++) {
+                    cout << "CS " << sorted[i] << " ";
                 }
                 cout << endl;
-            }
-            else {
-                cout << "Graph has cycles or is empty!" << endl;
             }
             break;
         }

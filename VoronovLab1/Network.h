@@ -22,9 +22,8 @@ public:
     std::unordered_map<int, int> topologicalSort() const;
     void removeCS(int csId);
     void removePipe(int pipeId);
-    bool isEmpty() const {
-        return graph.empty();
-    }
+    bool isEmpty() const;
+    bool hasCycle() const;
 
 private:
     void topologicalSortUtil(int v, std::unordered_map<int, bool>& visited,

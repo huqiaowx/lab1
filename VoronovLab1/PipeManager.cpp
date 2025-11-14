@@ -31,6 +31,7 @@ Pipe& PipeManager::createPipeWithoutDiameter() {
     pipe.setName(name);
     pipe.setLength(length);
     pipe.setRepair(inRepair);
+    addPipe(pipe);
     return pipe;
 }
 

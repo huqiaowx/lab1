@@ -23,13 +23,26 @@ bool Network::connectCS(int csInId, int csOutId, int diameter, PipeManager& pipe
 
     auto diamIt = freePipesByDiameter.find(diameter);
     if (diamIt != freePipesByDiameter.end() && !diamIt->second.empty()) {
-        int pipeId = diamIt->second.begin()->first;
-        diamIt->second.erase(pipeId);
+        std::cout << "Available pipes with diameter " << diameter << ":" << std::endl;
+        for (const auto& pipe : diamIt->second) {
+            std::cout << "Pipe ID: " << pipe.first << std::endl;
+        }
 
-        graph[csInId][csOutId] = pipeId;
+        int selectedPipeId;
+        std::cout << "Select pipe ID to use: ";
+        std::cin >> selectedPipeId;
+        std::cin.ignore();
+
+        if (diamIt->second.find(selectedPipeId) == diamIt->second.end()) {
+            std::cout << "Error: Invalid pipe ID or pipe not available!" << std::endl;
+            return false;
+        }
+
+        diamIt->second.erase(selectedPipeId);
+        graph[csInId][csOutId] = selectedPipeId;
 
         std::cout << "Connected CS " << csInId << " -> CS " << csOutId
-            << " using pipe " << pipeId << " (diameter: " << diameter << ")" << std::endl;
+            << " using pipe " << selectedPipeId << " (diameter: " << diameter << ")" << std::endl;
         return true;
     }
 
@@ -37,7 +50,6 @@ bool Network::connectCS(int csInId, int csOutId, int diameter, PipeManager& pipe
 
     Pipe& newPipe = pipeManager.createPipeWithoutDiameter();
     newPipe.setDiametr(diameter); 
-    addPipe(newPipe);
 
     graph[csInId][csOutId] = newPipe.getId();
 
@@ -100,7 +112,87 @@ void Network::displayNetwork() const {
 }
 
 std::unordered_map<int, int> Network::topologicalSort() const {
-    return std::unordered_map<int, int>();
+    std::unordered_map<int, int> result;
+    std::unordered_map<int, bool> visited;
+    int index = 0;
+
+    if (hasCycle()) {
+        std::cout << "Error: Graph has cycles, cannot perform topological sort!" << std::endl;
+        return result;
+    }
+
+    for (const auto& vertex : graph) {
+        int v = vertex.first;
+        if (!visited[v]) {
+            topologicalSortUtil(v, visited, result, index);
+        }
+    }
+
+    return result;
+}
+
+void Network::topologicalSortUtil(int v, std::unordered_map<int, bool>& visited,
+    std::unordered_map<int, int>& result, int& index) const {
+    visited[v] = true;
+
+    auto it = graph.find(v);
+    if (it != graph.end()) {
+        for (const auto& adjacent : it->second) {
+            int adjacentVertex = adjacent.first;
+            if (!visited[adjacentVertex]) {
+                topologicalSortUtil(adjacentVertex, visited, result, index);
+            }
+        }
+    }
+
+    result[index++] = v;
+}
+
+bool Network::isEmpty() const {
+    for (const auto& vertex : graph) {
+        if (!vertex.second.empty()) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool Network::hasCycle() const {
+    std::unordered_map<int, bool> visited;
+    std::unordered_map<int, bool> recStack;
+
+    for (const auto& vertex : graph) {
+        int v = vertex.first;
+        if (!visited[v]) {
+            if (hasCycleUtil(v, visited, recStack)) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool Network::hasCycleUtil(int v, std::unordered_map<int, bool>& visited,
+    std::unordered_map<int, bool>& recStack) const {
+    if (!visited[v]) {
+        visited[v] = true;
+        recStack[v] = true;
+
+        auto it = graph.find(v);
+        if (it != graph.end()) {
+            for (const auto& adjacent : it->second) {
+                int adjacentVertex = adjacent.first;
+                if (!visited[adjacentVertex] && hasCycleUtil(adjacentVertex, visited, recStack)) {
+                    return true;
+                }
+                else if (recStack[adjacentVertex]) {
+                    return true;
+                }
+            }
+        }
+    }
+    recStack[v] = false;
+    return false;
 }
 
 void Network::removeCS(int csId) {}
