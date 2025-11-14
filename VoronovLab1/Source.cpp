@@ -17,7 +17,7 @@ std::vector<int> foundStations;
 void Menu(PipeManager& pipeManager, CSManager& csManager, Network& network) {
 	while (1)
 	{
-		cout << "Choose an action\n1. Add pipe\n2. Add compressor station\n3. View all objects\n4. Edit pipe\n5. Edit compressor station\n6. Search pipes\n7. Search compressor stations\n8. Batch edit pipes\n9. Delete pipe\n10. Delete compressor station\n11. Save\n12. Load\n13. View network\n14. Connect CS with pipe\n15. Disconnect pipe\n16. Topological sort\n0. Exit\n";
+		cout << "Choose an action\n1. Add pipe\n2. Add compressor station\n3. View all objects\n4. Edit pipe\n5. Edit compressor station\n6. Search pipes\n7. Search compressor stations\n8. Batch edit pipes\n9. Delete pipe\n10. Delete compressor station\n11. Save\n12. Load\n13. View network\n14. Connect CS with pipe\n15. Disconnect pipe\n16. Topological sort\n17. Remove CS from the connection\n0. Exit\n";
         string input;
         getline(cin, input);
         logInput(input);
@@ -572,6 +572,38 @@ void Menu(PipeManager& pipeManager, CSManager& csManager, Network& network) {
                     cout << "CS " << sorted[i] << " ";
                 }
                 cout << endl;
+            }
+            break;
+        }
+        case 17: {
+            if (csManager.isEmpty()) {
+                cout << "No compressor stations available to delete." << endl;
+                break;
+            }
+
+            cout << "Available compressor stations:" << endl;
+            csManager.displayAllCSs();
+
+            int csId;
+            inputNumber(csId, "Enter compressor station ID to delete from network: ");
+
+            if (!csManager.getCS(csId)) {
+                cout << "Compressor station with ID " << csId << " not found!" << endl;
+                break;
+            }
+
+            cout << "This will remove CS " << csId << " and ALL its connections!" << endl;
+            cout << "Are you sure? (1 - yes, 0 - no): ";
+
+            bool confirm;
+            inputInRange(confirm, "Confirm deletion: ", false, true);
+
+            if (confirm) {
+                network.removeCS(csId, pipeManager);
+                cout << "CS " << csId << " removed from network with all connections!" << endl;
+            }
+            else {
+                cout << "Deletion cancelled." << endl;
             }
             break;
         }

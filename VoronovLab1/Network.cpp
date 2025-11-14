@@ -1,5 +1,6 @@
 #include "Network.h"
 #include <iostream>
+#include <unordered_set>
 
 Network::Network() {}
 
@@ -195,5 +196,32 @@ bool Network::hasCycleUtil(int v, std::unordered_map<int, bool>& visited,
     return false;
 }
 
-void Network::removeCS(int csId) {}
+void Network::removeCS(int csId, PipeManager& pipeManager) {
+    std::unordered_set<int> pipesToFree;
+
+    auto outgoingIt = graph.find(csId);
+    if (outgoingIt != graph.end()) {
+        for (const auto& connection : outgoingIt->second) {
+            pipesToFree.insert(connection.second); 
+        }
+    }
+
+    for (auto& csIn : graph) {
+        auto it = csIn.second.find(csId);
+        if (it != csIn.second.end()) {
+            pipesToFree.insert(it->second); 
+            csIn.second.erase(it);
+        }
+    }
+
+    for (int pipeId : pipesToFree) {
+        Pipe* pipe = pipeManager.getPipe(pipeId);
+        if (pipe) {
+            freePipesByDiameter[pipe->getDiametr()][pipeId] = true;
+        }
+    }
+
+    graph.erase(csId);
+}
+
 void Network::removePipe(int pipeId) {}

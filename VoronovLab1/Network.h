@@ -20,7 +20,7 @@ public:
     bool isValidConnection(int csInId, int csOutId) const;
     void displayNetwork() const;
     std::unordered_map<int, int> topologicalSort() const;
-    void removeCS(int csId);
+    void removeCS(int csId, PipeManager& pipeManager);
     void removePipe(int pipeId);
     bool isEmpty() const;
     bool hasCycle() const;
