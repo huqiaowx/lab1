@@ -59,18 +59,6 @@ bool Network::connectCS(int csInId, int csOutId, int diameter, PipeManager& pipe
     return true;
 }
 
-bool Network::disconnectPipe(int pipeId) {
-    for (auto& csIn : graph) {
-        for (auto it = csIn.second.begin(); it != csIn.second.end(); ++it) {
-            if (it->second == pipeId) {
-                csIn.second.erase(it);
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
 bool Network::isValidConnection(int csInId, int csOutId) const {
     if (csInId == csOutId) {
         std::cout << "Error: Cannot connect CS to itself!" << std::endl;
@@ -196,7 +184,30 @@ bool Network::hasCycleUtil(int v, std::unordered_map<int, bool>& visited,
     return false;
 }
 
-void Network::removeCS(int csId, PipeManager& pipeManager) {
+bool Network::hasCSConnections(int csId) const {
+    if (graph.find(csId) != graph.end() && !graph.at(csId).empty()) {
+        return true;
+    }
+    for (const auto& csIn : graph) {
+        if (csIn.second.find(csId) != csIn.second.end()) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool Network::hasPipeConnections(int pipeId) const {
+    for (const auto& csIn : graph) {
+        for (const auto& csOut : csIn.second) {
+            if (csOut.second == pipeId) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool Network::removeCS(int csId, PipeManager& pipeManager) {
     std::unordered_set<int> pipesToFree;
 
     auto outgoingIt = graph.find(csId);
@@ -222,6 +233,37 @@ void Network::removeCS(int csId, PipeManager& pipeManager) {
     }
 
     graph.erase(csId);
+    return 1;
 }
 
-void Network::removePipe(int pipeId) {}
+bool Network::removePipe(int pipeId, PipeManager& pipeManager, bool returnToFree = false) {
+    bool found = false;
+
+    for (auto& csIn : graph) {
+        for (auto it = csIn.second.begin(); it != csIn.second.end(); ) {
+            if (it->second == pipeId) {
+                if (returnToFree) {
+                    Pipe* pipe = pipeManager.getPipe(pipeId);
+                    if (pipe) {
+                        freePipesByDiameter[pipe->getDiametr()][pipeId] = true;
+                    }
+                }
+
+                it = csIn.second.erase(it);
+                found = true;
+            }
+            else {
+                ++it;
+            }
+        }
+    }
+
+    if (found) {
+        std::cout << "Pipe " << pipeId << " removed from network and returned to free pipes!" << std::endl;
+        return 1;
+    }
+    else {
+        std::cout << "Pipe " << pipeId << " not found in network connections!" << std::endl;
+        return 0;
+    }
+}

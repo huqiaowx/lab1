@@ -16,14 +16,15 @@ public:
     void addPipe(const Pipe& pipe);
     void addCS(const CS& cs);
     bool connectCS(int csInId, int csOutId, int diameter, PipeManager& pipeManager);
-    bool disconnectPipe(int pipeId);
     bool isValidConnection(int csInId, int csOutId) const;
     void displayNetwork() const;
     std::unordered_map<int, int> topologicalSort() const;
-    void removeCS(int csId, PipeManager& pipeManager);
-    void removePipe(int pipeId);
+    bool removeCS(int csId, PipeManager& pipeManager);
+    bool removePipe(int pipeId, PipeManager& pipeManager,bool returnToFree);
     bool isEmpty() const;
     bool hasCycle() const;
+    bool hasCSConnections(int csId) const;
+    bool hasPipeConnections(int pipeId) const;
 
 private:
     void topologicalSortUtil(int v, std::unordered_map<int, bool>& visited,

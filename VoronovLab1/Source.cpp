@@ -17,7 +17,7 @@ std::vector<int> foundStations;
 void Menu(PipeManager& pipeManager, CSManager& csManager, Network& network) {
 	while (1)
 	{
-		cout << "Choose an action\n1. Add pipe\n2. Add compressor station\n3. View all objects\n4. Edit pipe\n5. Edit compressor station\n6. Search pipes\n7. Search compressor stations\n8. Batch edit pipes\n9. Delete pipe\n10. Delete compressor station\n11. Save\n12. Load\n13. View network\n14. Connect CS with pipe\n15. Disconnect pipe\n16. Topological sort\n17. Remove CS from the connection\n0. Exit\n";
+		cout << "Choose an action\n1. Add pipe\n2. Add compressor station\n3. View all objects\n4. Edit pipe\n5. Edit compressor station\n6. Search pipes\n7. Search compressor stations\n8. Batch edit pipes\n9. Delete pipe\n10. Delete compressor station\n11. Save\n12. Load\n13. View network\n14. Connect CS with pipe\n15. Disconnect pipe\n16. Disconnect CS\n17. Topological sort\n0. Exit\n";
         string input;
         getline(cin, input);
         logInput(input);
@@ -427,16 +427,34 @@ void Menu(PipeManager& pipeManager, CSManager& csManager, Network& network) {
             int pipeId;
             inputNumber(pipeId, "Enter pipe ID to delete: ");
 
-            if (pipeManager.deletePipe(pipeId)) {
-                cout << "Pipe with ID " << pipeId << " deleted successfully!" << endl;
-                auto it = std::find(foundPipes.begin(), foundPipes.end(), pipeId);
-                if (it != foundPipes.end()) {
-                    foundPipes.erase(it);
+            Pipe* pipe = pipeManager.getPipe(pipeId);
+            if (!pipe) {
+                cout << "Pipe with ID " << pipeId << " not found!" << endl;
+                break;
+            }
+
+            if (network.hasPipeConnections(pipeId)) {
+                cout << "WARNING: Pipe " << pipeId << " is used in network connections!" << endl;
+                cout << "This will remove the pipe from ALL connections." << endl;
+
+                bool confirm;
+                inputInRange(confirm, "Are you sure? (1 - yes, 0 - no): ", false, true);
+
+                if (!confirm) {
+                    cout << "Deletion cancelled." << endl;
+                    break;
                 }
             }
-            else {
-                cout << "Pipe with ID " << pipeId << " not found!" << endl;
+
+            network.removePipe(pipeId, pipeManager, false);
+            pipeManager.deletePipe(pipeId);
+
+            auto it = std::find(foundPipes.begin(), foundPipes.end(), pipeId);
+            if (it != foundPipes.end()) {
+                foundPipes.erase(it);
             }
+
+            cout << "Pipe with ID " << pipeId << " deleted successfully!" << endl;
             break;
         }
 
@@ -452,16 +470,34 @@ void Menu(PipeManager& pipeManager, CSManager& csManager, Network& network) {
             int csId;
             inputNumber(csId, "Enter compressor station ID to delete: ");
 
-            if (csManager.deleteCS(csId)) {
-                cout << "Compressor station with ID " << csId << " deleted successfully!" << endl;
-                auto it = std::find(foundStations.begin(), foundStations.end(), csId);
-                if (it != foundStations.end()) {
-                    foundStations.erase(it);
+            CS* cs = csManager.getCS(csId);
+            if (!cs) {
+                cout << "Compressor station with ID " << csId << " not found!" << endl;
+                break;
+            }
+
+            if (network.hasCSConnections(csId)) {
+                cout << "WARNING: CS " << csId << " has connections in the network!" << endl;
+                cout << "This will remove the CS and ALL its connections." << endl;
+
+                bool confirm;
+                inputInRange(confirm, "Are you sure? (1 - yes, 0 - no): ", false, true);
+
+                if (!confirm) {
+                    cout << "Deletion cancelled." << endl;
+                    break;
                 }
             }
-            else {
-                cout << "Compressor station with ID " << csId << " not found!" << endl;
+
+            network.removeCS(csId, pipeManager);
+            csManager.deleteCS(csId);
+
+            auto it = std::find(foundStations.begin(), foundStations.end(), csId);
+            if (it != foundStations.end()) {
+                foundStations.erase(it);
             }
+
+            cout << "CS " << csId << " deleted successfully!" << endl;
             break;
         }
         case 11:
@@ -551,7 +587,7 @@ void Menu(PipeManager& pipeManager, CSManager& csManager, Network& network) {
             int pipeId;
             inputNumber(pipeId, "Enter pipe ID to disconnect: ");
 
-            if (network.disconnectPipe(pipeId)) {
+            if (network.removePipe(pipeId, pipeManager, true)) {
                 cout << "Pipe disconnected successfully!" << endl;
             }
             else {
@@ -559,23 +595,8 @@ void Menu(PipeManager& pipeManager, CSManager& csManager, Network& network) {
             }
             break;
         }
-        case 16: {
-            if (network.isEmpty()) {
-                cout << "Network is empty!" << endl;
-                break;
-            }
 
-            auto sorted = network.topologicalSort();
-            if (!sorted.empty()) {
-                cout << "Topological sort order: ";
-                for (int i = 0; i < sorted.size(); i++) {
-                    cout << "CS " << sorted[i] << " ";
-                }
-                cout << endl;
-            }
-            break;
-        }
-        case 17: {
+        case 16: {
             if (csManager.isEmpty()) {
                 cout << "No compressor stations available to delete." << endl;
                 break;
@@ -604,6 +625,23 @@ void Menu(PipeManager& pipeManager, CSManager& csManager, Network& network) {
             }
             else {
                 cout << "Deletion cancelled." << endl;
+            }
+            break;
+        }
+
+        case 17: {
+            if (network.isEmpty()) {
+                cout << "Network is empty!" << endl;
+                break;
+            }
+
+            auto sorted = network.topologicalSort();
+            if (!sorted.empty()) {
+                cout << "Topological sort order: ";
+                for (int i = 0; i < sorted.size(); i++) {
+                    cout << "CS " << sorted[i] << " ";
+                }
+                cout << endl;
             }
             break;
         }
