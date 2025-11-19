@@ -128,9 +128,13 @@ std::unordered_map<int, int> Network::topologicalSort() const {
                 topologicalSortUtil(v, visited, result, index);
             }
         }
-    }
+        std::unordered_map<int, int> correctOrder;
+        for (int i = 0; i < index; i++) {
+            correctOrder[i] = result[index - 1 - i];
+        }
 
-    return result;
+        return correctOrder;
+    }
 }
 
 void Network::topologicalSortUtil(int v, std::unordered_map<int, bool>& visited,
