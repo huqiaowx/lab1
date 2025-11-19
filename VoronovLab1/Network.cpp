@@ -112,8 +112,21 @@ std::unordered_map<int, int> Network::topologicalSort() const {
 
     for (const auto& vertex : graph) {
         int v = vertex.first;
-        if (!visited[v]) {
-            topologicalSortUtil(v, visited, result, index);
+
+        bool hasOutgoing = !vertex.second.empty();
+        bool hasIncoming = false;
+
+        for (const auto& otherVertex : graph) {
+            if (otherVertex.second.find(v) != otherVertex.second.end()) {
+                hasIncoming = true;
+                break;
+            }
+        }
+
+        if (hasOutgoing || hasIncoming) {
+            if (!visited[v]) {
+                topologicalSortUtil(v, visited, result, index);
+            }
         }
     }
 
