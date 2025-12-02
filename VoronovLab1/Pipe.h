@@ -21,6 +21,17 @@ public:
     double getLenght() const { return length; }
     int getDiametr() const { return diameter; }
     bool getRepair() const { return inRepair; }
+    double getCapacity() const {
+        if (inRepair) return 0.0;
+        double d_m = diameter / 1000.0;
+        double l_m = length * 1000.0;
+        double result = sqrt(pow(d_m, 5) / l_m);
+        return result * 10000.0;
+    }
+    double getWeight() const {
+        if (inRepair) return std::numeric_limits<double>::max();
+        return length;
+    }
 
     void setName(const std::string& newName) { name = newName; }
     void setLength(double newLength) { length = newLength; }

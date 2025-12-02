@@ -17,7 +17,7 @@ std::vector<int> foundStations;
 void Menu(PipeManager& pipeManager, CSManager& csManager, Network& network) {
 	while (1)
 	{
-		cout << "Choose an action\n1. Add pipe\n2. Add compressor station\n3. View all objects\n4. Edit pipe\n5. Edit compressor station\n6. Search pipes\n7. Search compressor stations\n8. Batch edit pipes\n9. Delete pipe\n10. Delete compressor station\n11. Save\n12. Load\n13. View network\n14. Connect CS with pipe\n15. Disconnect pipe\n16. Disconnect CS\n17. Topological sort\n0. Exit\n";
+		cout << "Choose an action\n1. Add pipe\n2. Add compressor station\n3. View all objects\n4. Edit pipe\n5. Edit compressor station\n6. Search pipes\n7. Search compressor stations\n8. Batch edit pipes\n9. Delete pipe\n10. Delete compressor station\n11. Save\n12. Load\n13. View network\n14. Connect CS with pipe\n15. Disconnect pipe\n16. Disconnect CS\n17. Topological sort\n18. Calculate maximum flow\n19. Find shortest path\n0. Exit\n";
         string input;
         getline(cin, input);
         logInput(input);
@@ -640,6 +640,89 @@ void Menu(PipeManager& pipeManager, CSManager& csManager, Network& network) {
                 cout << "Topological sort order: ";
                 for (int i = 0; i < sorted.size(); i++) {
                     cout << "CS " << sorted[i] << " ";
+                }
+                cout << endl;
+            }
+            break;
+        }
+
+        case 18: {
+            if (network.isEmpty()) {
+                cout << "Network is empty, cannot calculate flow." << endl;
+                break;
+            }
+
+            if (csManager.getCount() < 2) {
+                cout << "Need at least two CS to calculate flow." << endl;
+                break;
+            }
+
+            cout << "Available CS:" << endl;
+            csManager.displayAllCSs();
+
+            int sourceId, sinkId;
+            inputNumber(sourceId, "Enter source CS ID: ");
+            inputNumber(sinkId, "Enter sink CS ID: ");
+
+            if (sourceId == sinkId) {
+                cout << "Source and sink cannot be the same." << endl;
+                break;
+            }
+
+            if (!csManager.getCS(sourceId) || !csManager.getCS(sinkId)) {
+                cout << "One or both CS not found." << endl;
+                break;
+            }
+
+            double maxFlow = network.findMaxFlow(sourceId, sinkId, pipeManager);
+            cout << "Maximum Flow Result" << endl;
+            cout << "Maximum flow from CS " << sourceId << " to CS " << sinkId
+                << ": " << maxFlow << " units" << endl;
+            break;
+        }
+
+        case 19: {
+            if (network.isEmpty()) {
+                cout << "Network is empty, cannot find path." << endl;
+                break;
+            }
+
+            if (csManager.getCount() < 2) {
+                cout << "Need at least two CS to find path." << endl;
+                break;
+            }
+
+            cout << "Available CS:" << endl;
+            csManager.displayAllCSs();
+
+            int startId, endId;
+            inputNumber(startId, "Enter start CS ID: ");
+            inputNumber(endId, "Enter end CS ID: ");
+
+            if (startId == endId) {
+                cout << "Start and end are the same station." << endl;
+                break;
+            }
+
+            if (!csManager.getCS(startId) || !csManager.getCS(endId)) {
+                cout << "One or both CS not found." << endl;
+                break;
+            }
+
+            double totalLength;
+            auto path = network.findShortestPath(startId, endId, pipeManager, totalLength);
+
+            cout << "Shortest Path Result" << endl;
+            if (path.empty()) {
+                cout << "No path found between CS " << startId << " and CS " << endId << endl;
+            }
+            else {
+                cout << "Path found!" << endl;
+                cout << "Total length: " << totalLength << " km" << endl;
+                cout << "Path: ";
+                for (size_t i = 0; i < path.size(); i++) {
+                    cout << "CS " << path[i];
+                    if (i < path.size() - 1) cout << " -> ";
                 }
                 cout << endl;
             }

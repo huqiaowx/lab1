@@ -1,6 +1,7 @@
 #include "Network.h"
 #include <iostream>
 #include <unordered_set>
+#include <queue>
 
 Network::Network() {}
 
@@ -110,32 +111,46 @@ std::unordered_map<int, int> Network::topologicalSort() const {
         return result;
     }
 
+    std::unordered_set<int> allVertices;
+
     for (const auto& vertex : graph) {
-        int v = vertex.first;
-
-        bool hasOutgoing = !vertex.second.empty();
-        bool hasIncoming = false;
-
-        for (const auto& otherVertex : graph) {
-            if (otherVertex.second.find(v) != otherVertex.second.end()) {
-                hasIncoming = true;
-                break;
-            }
+        for (const auto& neighbor : vertex.second) {
+            allVertices.insert(vertex.first);
+            allVertices.insert(neighbor.first);
         }
-
-        if (hasOutgoing || hasIncoming) {
-            if (!visited[v]) {
-                topologicalSortUtil(v, visited, result, index);
-            }
-        }
-        std::unordered_map<int, int> correctOrder;
-        for (int i = 0; i < index; i++) {
-            correctOrder[i] = result[index - 1 - i];
-        }
-
-        return correctOrder;
     }
+
+    if (allVertices.empty()) {
+        return result;
+    }
+
+    std::unordered_set<int> sources = allVertices;
+
+    for (const auto& vertex : graph) {
+        for (const auto& neighbor : vertex.second) {
+            sources.erase(neighbor.first);
+        }
+    }
+
+    if (sources.empty()) {
+        std::cout << "No source vertices found." << std::endl;
+        return result;
+    }
+
+    for (int v : sources) {
+        if (!visited[v]) {
+            topologicalSortUtil(v, visited, result, index);
+        }
+    }
+
+    std::unordered_map<int, int> correctOrder;
+    for (int i = 0; i < index; i++) {
+        correctOrder[i] = result[index - 1 - i];
+    }
+
+    return correctOrder;
 }
+
 
 void Network::topologicalSortUtil(int v, std::unordered_map<int, bool>& visited,
     std::unordered_map<int, int>& result, int& index) const {
@@ -283,4 +298,206 @@ bool Network::removePipe(int pipeId, PipeManager& pipeManager, bool returnToFree
         std::cout << "Pipe " << pipeId << " not found in network connections!" << std::endl;
         return 0;
     }
+}
+
+double Network::findMaxFlow(int sourceId, int sinkId, PipeManager& pipeManager) {
+    if (graph.empty()) {
+        std::cout << "Network is empty, nothing to calculate." << std::endl;
+        return 0.0;
+    }
+
+    bool foundSource = false;
+    bool foundSink = false;
+
+    for (const auto& node : graph) {
+        if (node.first == sourceId) foundSource = true;
+        if (node.first == sinkId) foundSink = true;
+        for (const auto& neighbor : node.second) {
+            if (neighbor.first == sinkId) foundSink = true;
+        }
+    }
+
+    if (!foundSource || !foundSink) {
+        std::cout << "Error: Source or sink stations not found in the network." << std::endl;
+        return 0.0;
+    }
+
+    std::unordered_map<int, std::unordered_map<int, double>> residual;
+
+    for (const auto& from : graph) {
+        for (const auto& to : from.second) {
+            Pipe* pipe = pipeManager.getPipe(to.second);
+            if (pipe) {
+                residual[from.first][to.first] = pipe->getCapacity();
+            }
+        }
+    }
+
+    double maxFlow = 0.0;
+    int iteration = 0;
+
+    while (true) {
+        iteration++;
+
+        std::unordered_map<int, int> parent;
+        std::queue<int> q;
+        q.push(sourceId);
+        parent[sourceId] = -1;
+
+        bool foundPath = false;
+
+        while (!q.empty() && !foundPath) {
+            int u = q.front();
+            q.pop();
+
+            auto it = residual.find(u);
+            if (it != residual.end()) {
+                for (const auto& v : it->second) {
+                    if (parent.find(v.first) == parent.end() && v.second > 0) {
+                        parent[v.first] = u;
+                        if (v.first == sinkId) {
+                            foundPath = true;
+                            break;
+                        }
+                        q.push(v.first);
+                    }
+                }
+            }
+        }
+
+        if (!foundPath) {
+            std::cout << "Iteration " << iteration << ": No more augmenting paths found." << std::endl;
+            break;
+        }
+
+        double pathFlow = std::numeric_limits<double>::max();
+        for (int v = sinkId; v != sourceId; v = parent[v]) {
+            int u = parent[v];
+            pathFlow = std::min(pathFlow, residual[u][v]);
+        }
+
+        std::cout << "Iteration " << iteration << ": Found path with flow = " << pathFlow << std::endl;
+
+        std::cout << "Path: ";
+        std::vector<int> path;
+        for (int v = sinkId; v != sourceId; v = parent[v]) {
+            path.push_back(v);
+        }
+        path.push_back(sourceId);
+        for (int i = path.size() - 1; i >= 0; i--) {
+            std::cout << "CS " << path[i];
+            if (i > 0) std::cout << " -> ";
+        }
+        std::cout << std::endl;
+
+        for (int v = sinkId; v != sourceId; v = parent[v]) {
+            int u = parent[v];
+            residual[u][v] -= pathFlow;
+        }
+
+        maxFlow += pathFlow;
+        std::cout << "Current total flow: " << maxFlow << std::endl << std::endl;
+    }
+
+    std::cout << "Maximum flow calculated: " << maxFlow << " units" << std::endl;
+    return maxFlow;
+}
+
+std::vector<int> Network::findShortestPath(int startId, int endId, PipeManager& pipeManager, double& totalLength) {
+    totalLength = 0.0;
+
+    if (graph.empty()) {
+        std::cout << "Network is empty, no path to find." << std::endl;
+        return {};
+    }
+
+    bool foundStart = false;
+    bool foundEnd = false;
+
+    for (const auto& node : graph) {
+        if (node.first == startId) foundStart = true;
+        if (node.first == endId) foundEnd = true;
+        for (const auto& neighbor : node.second) {
+            if (neighbor.first == endId) foundEnd = true;
+        }
+    }
+
+    if (!foundStart || !foundEnd) {
+        std::cout << "Error: Start or end station not found in the network." << std::endl;
+        return {};
+    }
+
+    if (startId == endId) {
+        std::cout << "Start and end are the same station." << std::endl;
+        return { startId };
+    }
+
+    std::unordered_map<int, double> dist;
+    std::unordered_map<int, int> prev;
+    std::unordered_set<int> visited;
+
+    for (const auto& node : graph) {
+        dist[node.first] = std::numeric_limits<double>::max();
+    }
+
+    for (const auto& node : graph) {
+        for (const auto& neighbor : node.second) {
+            dist[neighbor.first] = std::numeric_limits<double>::max();
+        }
+    }
+
+    dist[startId] = 0;
+
+    while (true) {
+        int current = -1;
+        double minDist = std::numeric_limits<double>::max();
+
+        for (const auto& d : dist) {
+            if (!visited.count(d.first) && d.second < minDist) {
+                minDist = d.second;
+                current = d.first;
+            }
+        }
+
+        if (current == -1 || current == endId) break;
+
+        visited.insert(current);
+
+        auto it = graph.find(current);
+        if (it != graph.end()) {
+            for (const auto& neighbor : it->second) {
+                if (visited.count(neighbor.first)) continue;
+
+                Pipe* pipe = pipeManager.getPipe(neighbor.second);
+                if (!pipe) continue;
+
+                double weight = pipe->getWeight();
+                if (weight == std::numeric_limits<double>::max()) {
+                    continue;
+                }
+
+                if (weight == std::numeric_limits<double>::max()) continue;
+
+                double newDist = dist[current] + weight;
+                if (newDist < dist[neighbor.first]) {
+                    dist[neighbor.first] = newDist;
+                    prev[neighbor.first] = current;
+                }
+            }
+        }
+    }
+
+    if (dist[endId] == std::numeric_limits<double>::max()) {
+        return {};
+    }
+
+    std::vector<int> path;
+    for (int at = endId; at != startId; at = prev[at]) {
+        path.push_back(at);
+    }
+    path.push_back(startId);
+    std::reverse(path.begin(), path.end());
+
+    totalLength = dist[endId];
+    return path;
 }

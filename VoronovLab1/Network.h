@@ -25,6 +25,8 @@ public:
     bool hasCycle() const;
     bool hasCSConnections(int csId) const;
     bool hasPipeConnections(int pipeId) const;
+    double findMaxFlow(int sourceId, int sinkId, PipeManager& pipeManager);
+    std::vector<int> findShortestPath(int startId, int endId, PipeManager& pipeManager, double& totalLength);
 
 private:
     void topologicalSortUtil(int v, std::unordered_map<int, bool>& visited,

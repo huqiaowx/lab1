@@ -21,6 +21,7 @@ std::ostream& operator<<(std::ostream& out, const Pipe& pipe) {
     out << "Length: " << pipe.length << std::endl;
     out << "Diameter: " << pipe.diameter << std::endl;
     out << "Status: " << pipe.inRepair << std::endl;
+    out << "Capacity: " << pipe.getCapacity() << std::endl;
     out << std::endl;
     return out;
 }
